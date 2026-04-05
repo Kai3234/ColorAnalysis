@@ -1,0 +1,86 @@
+[
+  {
+    "hex": "#DAA520",
+    "name": "Goldenrod",
+    "subseason": "True Autumn",
+    "personality": ["Sophisticated", "Playful"],
+    "lifestyle": ["Professional", "Creative"]
+  },
+  {
+    "hex": "#FF7518",
+    "name": "Pumpkin",
+    "subseason": "True Autumn",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#B87333",
+    "name": "Copper",
+    "subseason": "True Autumn",
+    "personality": ["Sophisticated", "Bold"],
+    "lifestyle": ["Professional", "Creative"]
+  },
+  {
+    "hex": "#E34234",
+    "name": "Vermilion",
+    "subseason": "True Autumn",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#F4C430",
+    "name": "Warm Saffron",
+    "subseason": "True Autumn",
+    "personality": ["Playful", "Bold"],
+    "lifestyle": ["Active", "Creative"]
+  },
+  {
+    "hex": "#B7410E",
+    "name": "Rust",
+    "subseason": "True Autumn",
+    "personality": ["Sophisticated", "Bold"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#A0522D",
+    "name": "Spice",
+    "subseason": "True Autumn",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#738678",
+    "name": "Warm Moss",
+    "subseason": "True Autumn",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#FFC512",
+    "name": "Sunflower",
+    "subseason": "True Autumn",
+    "personality": ["Playful", "Bold"],
+    "lifestyle": ["Active", "Creative"]
+  },
+  {
+    "hex": "#CD7F32",
+    "name": "Bronze",
+    "subseason": "True Autumn",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#6B8E23",
+    "name": "Warm Olive",
+    "subseason": "True Autumn",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#A0522D",
+    "name": "Sienna",
+    "subseason": "True Autumn",
+    "personality": ["Sophisticated", "Bold"],
+    "lifestyle": ["Professional", "Minimalist"]
+  }
+]

@@ -161,11 +161,7 @@ fun PhotoProcessScreen(
                 }
             }
         }
-
-
     }
-
-
 }
 
 /**

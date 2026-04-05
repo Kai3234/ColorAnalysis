@@ -1,0 +1,86 @@
+[
+  {
+    "hex": "#000080",
+    "name": "Deep Navy",
+    "subseason": "Dark Winter",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#9B111E",
+    "name": "Deep Ruby",
+    "subseason": "Dark Winter",
+    "personality": ["Sophisticated", "Bold"],
+    "lifestyle": ["Professional", "Creative"]
+  },
+  {
+    "hex": "#005F5F",
+    "name": "Deep Emerald",
+    "subseason": "Dark Winter",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Creative"]
+  },
+  {
+    "hex": "#004B49",
+    "name": "Deep Teal",
+    "subseason": "Dark Winter",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#4A0E0E",
+    "name": "Dark Oxblood",
+    "subseason": "Dark Winter",
+    "personality": ["Sophisticated", "Bold"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#580F41",
+    "name": "Aubergine",
+    "subseason": "Dark Winter",
+    "personality": ["Sophisticated", "Playful"],
+    "lifestyle": ["Creative", "Professional"]
+  },
+  {
+    "hex": "#082567",
+    "name": "Deep Sapphire",
+    "subseason": "Dark Winter",
+    "personality": ["Bold", "Sophisticated"],
+    "lifestyle": ["Professional", "Active"]
+  },
+  {
+    "hex": "#2B2B2B",
+    "name": "Deep Charcoal",
+    "subseason": "Dark Winter",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Minimalist", "Professional"]
+  },
+  {
+    "hex": "#8B008B",
+    "name": "Deep Magenta",
+    "subseason": "Dark Winter",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#722F37",
+    "name": "Wine",
+    "subseason": "Dark Winter",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#2F4F4F",
+    "name": "Deep Slate",
+    "subseason": "Dark Winter",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Minimalist", "Professional"]
+  },
+  {
+    "hex": "#004953",
+    "name": "Midnight Green",
+    "subseason": "Dark Winter",
+    "personality": ["Sophisticated", "Bold"],
+    "lifestyle": ["Professional", "Creative"]
+  }
+]

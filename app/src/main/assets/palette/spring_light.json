@@ -1,0 +1,86 @@
+[
+  {
+    "hex": "#FBCEB1",
+    "name": "Apricot",
+    "subseason": "Light Spring",
+    "personality": ["Playful", "Calm"],
+    "lifestyle": ["Creative", "Minimalist"]
+  },
+  {
+    "hex": "#FFDAB3",
+    "name": "Peach",
+    "subseason": "Light Spring",
+    "personality": ["Calm", "Playful"],
+    "lifestyle": ["Minimalist", "Creative"]
+  },
+  {
+    "hex": "#F88379",
+    "name": "Light Coral",
+    "subseason": "Light Spring",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Active", "Creative"]
+  },
+  {
+    "hex": "#FFF1C1",
+    "name": "Buttercream",
+    "subseason": "Light Spring",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Minimalist", "Professional"]
+  },
+  {
+    "hex": "#FFFF99",
+    "name": "Daffodil",
+    "subseason": "Light Spring",
+    "personality": ["Playful", "Bold"],
+    "lifestyle": ["Active", "Creative"]
+  },
+  {
+    "hex": "#C4E1C1",
+    "name": "Mint Green",
+    "subseason": "Light Spring",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#B3E3E2",
+    "name": "Light Aqua",
+    "subseason": "Light Spring",
+    "personality": ["Calm", "Playful"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#FFE28A",
+    "name": "Sunlight Yellow",
+    "subseason": "Light Spring",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#FADADD",
+    "name": "Blush Pink",
+    "subseason": "Light Spring",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Minimalist", "Professional"]
+  },
+  {
+    "hex": "#FFB7A5",
+    "name": "Soft Melon",
+    "subseason": "Light Spring",
+    "personality": ["Playful", "Calm"],
+    "lifestyle": ["Creative", "Minimalist"]
+  },
+  {
+    "hex": "#D6C9FF",
+    "name": "Light Periwinkle",
+    "subseason": "Light Spring",
+    "personality": ["Sophisticated", "Playful"],
+    "lifestyle": ["Creative", "Professional"]
+  },
+  {
+    "hex": "#F7E7CE",
+    "name": "Pale Gold",
+    "subseason": "Light Spring",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Minimalist"]
+  }
+]

@@ -5,11 +5,9 @@ import android.graphics.Color
 import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,6 +34,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,10 +45,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.coloranalysis.data.AppDatabase
-import com.example.coloranalysis.data.SeasonData
 import com.example.coloranalysis.data.models.Profile
+import com.example.coloranalysis.ui.components.SeasonPaletteDisplay
 import com.example.coloranalysis.ui.photo.loadBitmapFromUri
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
 import androidx.compose.ui.graphics.Color as ComposeColor
@@ -61,7 +61,9 @@ fun ResultScreen(
     navigateToHome: () -> Unit
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val db = remember { AppDatabase.getDatabase(context).profileDao() }
+
     var profile by remember { mutableStateOf<Profile?>(null) }
     var isLoading by remember { mutableStateOf(true) }
 
@@ -96,9 +98,7 @@ fun ResultScreen(
     }
 
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(title = { Text("Kết quả Phân tích") })
-        }
+        topBar = { CenterAlignedTopAppBar(title = { Text("Kết quả Phân tích") }) }
     ) { padding ->
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -106,9 +106,6 @@ fun ResultScreen(
             }
         } else {
             profile?.let { p ->
-                // Fetch palette data once
-                val palette = SeasonData.palettes[p.seasonType ?: ""]
-
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -119,7 +116,7 @@ fun ResultScreen(
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 1. MAJOR RESULT: Season Name
+                    // 1. Tên mùa
                     Text(
                         text = p.seasonType ?: "Unknown",
                         style = MaterialTheme.typography.displaySmall,
@@ -128,39 +125,20 @@ fun ResultScreen(
                         textAlign = TextAlign.Center
                     )
 
-                    palette?.let { data ->
-                        Text(
-                            text = data.description,
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
-                        )
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                        // 2. WOW COLOURS GRID
-                        Text(
-                            text = "Bảng màu dành cho bạn",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            maxItemsInEachRow = 4
-                        ) {
-                            data.wowColors.forEach { color ->
-                                Box(
-                                    modifier = Modifier
-                                        .padding(6.dp)
-                                        .size(75.dp)
-                                        .background(color, RoundedCornerShape(12.dp)) // Better than Rectangle
-                                        .border(1.dp, color = androidx.compose.ui.graphics.Color.LightGray.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-                                )
+                    // 2. PHẦN BẢNG MÀU JSON + LỌC (Sử dụng Component đã tách)
+                    SeasonPaletteDisplay(
+                        seasonName = p.seasonType,
+                        initialPersonalities = p.personalityType ?: emptyList(),
+                        initialLifestyles = p.lifestyleType ?: emptyList(),
+                        onFilterChanged = { pers, life ->
+                            // Lưu vào DB khi người dùng thay đổi filter
+                            scope.launch(Dispatchers.IO) {
+                                db.insertProfile(p.copy(personalityType = pers, lifestyleType = life))
                             }
                         }
-                    }
+                    )
 
                     Spacer(modifier = Modifier.height(32.dp))
                     HorizontalDivider(thickness = 4.dp)

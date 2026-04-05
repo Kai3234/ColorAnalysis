@@ -29,5 +29,7 @@ data class Profile(
     val chromaScore: Float? = null,
     val valueScore: Float? = null,
 
-    val seasonType: String? = null
+    val seasonType: String? = null,
+    val personalityType: List<String>? = null,
+    val lifestyleType: List<String>? = null
 )

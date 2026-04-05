@@ -1,0 +1,86 @@
+[
+  {
+    "hex": "#FF5E5B",
+    "name": "Neon Coral",
+    "subseason": "Bright Spring",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#FFF700",
+    "name": "Bright Lemon",
+    "subseason": "Bright Spring",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Active", "Creative"]
+  },
+  {
+    "hex": "#FF9900",
+    "name": "Clear Orange",
+    "subseason": "Bright Spring",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Active", "Creative"]
+  },
+  {
+    "hex": "#FF8C69",
+    "name": "Bright Peach",
+    "subseason": "Bright Spring",
+    "personality": ["Calm", "Playful"],
+    "lifestyle": ["Minimalist", "Creative"]
+  },
+  {
+    "hex": "#7FFF00",
+    "name": "Vivid Grass Green",
+    "subseason": "Bright Spring",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Active", "Creative"]
+  },
+  {
+    "hex": "#00CED1",
+    "name": "Turquoise Blue",
+    "subseason": "Bright Spring",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#FF69B4",
+    "name": "Warm Pink",
+    "subseason": "Bright Spring",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#FFFF00",
+    "name": "Electric Yellow",
+    "subseason": "Bright Spring",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Active", "Creative"]
+  },
+  {
+    "hex": "#00FFFF",
+    "name": "Bright Aqua",
+    "subseason": "Bright Spring",
+    "personality": ["Playful", "Calm"],
+    "lifestyle": ["Creative", "Minimalist"]
+  },
+  {
+    "hex": "#FF6347",
+    "name": "Hot Tomato",
+    "subseason": "Bright Spring",
+    "personality": ["Bold", "Sophisticated"],
+    "lifestyle": ["Professional", "Creative"]
+  },
+  {
+    "hex": "#DAA520",
+    "name": "Goldenrod",
+    "subseason": "Bright Spring",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#A7FC00",
+    "name": "Bright Lime Green",
+    "subseason": "Bright Spring",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Active", "Creative"]
+  }
+]

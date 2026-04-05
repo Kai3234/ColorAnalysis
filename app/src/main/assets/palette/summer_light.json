@@ -1,0 +1,86 @@
+[
+  {
+    "hex": "#B4CFEC",
+    "name": "Misty Blue",
+    "subseason": "Light Summer",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#FFD1DC",
+    "name": "Powder Pink",
+    "subseason": "Light Summer",
+    "personality": ["Calm", "Playful"],
+    "lifestyle": ["Minimalist", "Creative"]
+  },
+  {
+    "hex": "#B5EAD7",
+    "name": "Seafoam",
+    "subseason": "Light Summer",
+    "personality": ["Calm", "Playful"],
+    "lifestyle": ["Minimalist", "Active"]
+  },
+  {
+    "hex": "#C8A2C8",
+    "name": "Lilac",
+    "subseason": "Light Summer",
+    "personality": ["Playful", "Bold"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#FFDAB9",
+    "name": "Peach Pink",
+    "subseason": "Light Summer",
+    "personality": ["Playful", "Calm"],
+    "lifestyle": ["Creative", "Minimalist"]
+  },
+  {
+    "hex": "#FFF1C1",
+    "name": "Buttercream",
+    "subseason": "Light Summer",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#E6E6FA",
+    "name": "Soft Lavender",
+    "subseason": "Light Summer",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Minimalist", "Professional"]
+  },
+  {
+    "hex": "#B0E0E6",
+    "name": "Powder Blue",
+    "subseason": "Light Summer",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#98FF98",
+    "name": "Mint",
+    "subseason": "Light Summer",
+    "personality": ["Playful", "Bold"],
+    "lifestyle": ["Active", "Creative"]
+  },
+  {
+    "hex": "#F7CAC9",
+    "name": "Rose Quartz",
+    "subseason": "Light Summer",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#87CEEB",
+    "name": "Sky Blue",
+    "subseason": "Light Summer",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Active", "Creative"]
+  },
+  {
+    "hex": "#CCCCFF",
+    "name": "Pale Periwinkle",
+    "subseason": "Light Summer",
+    "personality": ["Sophisticated", "Playful"],
+    "lifestyle": ["Professional", "Creative"]
+  }
+]

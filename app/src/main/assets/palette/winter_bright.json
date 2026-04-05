@@ -1,0 +1,86 @@
+[
+  {
+    "hex": "#007FFF",
+    "name": "Azure",
+    "subseason": "Bright Winter",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#990066",
+    "name": "Berry",
+    "subseason": "Bright Winter",
+    "personality": ["Sophisticated", "Bold"],
+    "lifestyle": ["Professional", "Creative"]
+  },
+  {
+    "hex": "#800020",
+    "name": "Burgundy",
+    "subseason": "Bright Winter",
+    "personality": ["Sophisticated", "Bold"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#36454F",
+    "name": "Charcoal",
+    "subseason": "Bright Winter",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#A5F2F3",
+    "name": "Ice Blue",
+    "subseason": "Bright Winter",
+    "personality": ["Calm", "Playful"],
+    "lifestyle": ["Minimalist", "Creative"]
+  },
+  {
+    "hex": "#26619C",
+    "name": "Lapis",
+    "subseason": "Bright Winter",
+    "personality": ["Sophisticated", "Bold"],
+    "lifestyle": ["Professional", "Creative"]
+  },
+  {
+    "hex": "#FF00FF",
+    "name": "Magenta",
+    "subseason": "Bright Winter",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#0F52BA",
+    "name": "Sapphire",
+    "subseason": "Bright Winter",
+    "personality": ["Bold", "Sophisticated"],
+    "lifestyle": ["Creative", "Professional"]
+  },
+  {
+    "hex": "#8A2BE2",
+    "name": "Violet",
+    "subseason": "Bright Winter",
+    "personality": ["Playful", "Bold"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#C21E56",
+    "name": "Rose",
+    "subseason": "Bright Winter",
+    "personality": ["Bold", "Sophisticated"],
+    "lifestyle": ["Creative", "Professional"]
+  },
+  {
+    "hex": "#708090",
+    "name": "Cool Slate",
+    "subseason": "Bright Winter",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#CCCCFF",
+    "name": "Periwinkle",
+    "subseason": "Bright Winter",
+    "personality": ["Calm", "Playful"],
+    "lifestyle": ["Minimalist", "Creative"]
+  }
+]

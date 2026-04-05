@@ -113,4 +113,6 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-compose:3.4.0") // Use latest stable version
     // Required if you want to load JPEGs/PNGs via Coil 3
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.4.0")
+
+    implementation("com.google.code.gson:gson:2.10.1")
 }

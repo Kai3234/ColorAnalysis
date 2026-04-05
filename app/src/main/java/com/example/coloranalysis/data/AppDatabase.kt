@@ -4,24 +4,29 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.example.coloranalysis.data.dao.ProfileDao
+import com.example.coloranalysis.data.helper.Converters
 import com.example.coloranalysis.data.models.Profile
 
-@Database(entities = [Profile::class], version = 1, exportSchema = false)
+@Database(entities = [Profile::class], version = 1)
+@TypeConverters(Converters::class) // <--- THÊM DÒNG NÀY Ở ĐÂY
 abstract class AppDatabase : RoomDatabase() {
-
     abstract fun profileDao(): ProfileDao
 
     companion object {
         @Volatile
-        private var Instance: AppDatabase? = null
+        private var INSTANCE: AppDatabase? = null
 
         fun getDatabase(context: Context): AppDatabase {
-            return Instance ?: synchronized(this) {
-                Room.databaseBuilder(context, AppDatabase::class.java, "color_analysis_db")
-                    .fallbackToDestructiveMigration()
-                    .build()
-                    .also { Instance = it }
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "color_analysis_db"
+                ).build()
+                INSTANCE = instance
+                instance
             }
         }
     }

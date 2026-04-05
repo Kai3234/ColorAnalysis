@@ -11,6 +11,7 @@ import com.example.coloranalysis.ui.photo.CameraScreen
 import com.example.coloranalysis.ui.photo.PhotoProcessScreen
 import com.example.coloranalysis.ui.photo.PhotoScreen
 import com.example.coloranalysis.ui.result.ResultScreen
+import com.example.coloranalysis.ui.result.SeasonPreviewScreen
 
 @Composable
 fun NavGraph(
@@ -31,7 +32,11 @@ fun NavGraph(
                 },
                 navigateToResult = { profileId ->
                     navController.navigate(Routes.result(profileId))
+                },
+                navigateToPreview = {
+                    navController.navigate(Destinations.PREVIEW)
                 }
+
             )
         }
 
@@ -119,6 +124,15 @@ fun NavGraph(
             ResultScreen(
                 profileId = profileId,
                 navigateToHome = {
+                    navController.navigate(Destinations.HOME)
+                }
+            )
+        }
+
+        // PREVIEW
+        composable(route = Destinations.PREVIEW) {
+            SeasonPreviewScreen(
+                onBack = {
                     navController.navigate(Destinations.HOME)
                 }
             )

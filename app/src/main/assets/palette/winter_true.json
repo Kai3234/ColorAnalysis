@@ -1,0 +1,86 @@
+[
+  {
+    "hex": "#0055FF",
+    "name": "Electric Blue",
+    "subseason": "True Winter",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#FF69B4",
+    "name": "Hot Pink",
+    "subseason": "True Winter",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#E0115F",
+    "name": "Ruby",
+    "subseason": "True Winter",
+    "personality": ["Sophisticated", "Bold"],
+    "lifestyle": ["Professional", "Creative"]
+  },
+  {
+    "hex": "#000000",
+    "name": "Black",
+    "subseason": "True Winter",
+    "personality": ["Sophisticated", "Bold"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#E5F9F9",
+    "name": "Frost",
+    "subseason": "True Winter",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Minimalist", "Creative"]
+  },
+  {
+    "hex": "#A020F0",
+    "name": "Bright Purple",
+    "subseason": "True Winter",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#D9D9D6",
+    "name": "Limestone",
+    "subseason": "True Winter",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#00FFFF",
+    "name": "Cyan",
+    "subseason": "True Winter",
+    "personality": ["Playful", "Bold"],
+    "lifestyle": ["Active", "Creative"]
+  },
+  {
+    "hex": "#D200D2",
+    "name": "Fuchsia",
+    "subseason": "True Winter",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#3F00FF",
+    "name": "Ultramarine",
+    "subseason": "True Winter",
+    "personality": ["Sophisticated", "Bold"],
+    "lifestyle": ["Professional", "Creative"]
+  },
+  {
+    "hex": "#C0C0C0",
+    "name": "Silver",
+    "subseason": "True Winter",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Minimalist", "Professional"]
+  },
+  {
+    "hex": "#1C1C1C",
+    "name": "Graphite",
+    "subseason": "True Winter",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Minimalist"]
+  }
+]

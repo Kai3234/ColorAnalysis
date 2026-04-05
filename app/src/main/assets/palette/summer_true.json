@@ -1,0 +1,86 @@
+[
+  {
+    "hex": "#D4A5A5",
+    "name": "Dusty Rose",
+    "subseason": "True Summer",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Minimalist", "Professional"]
+  },
+  {
+    "hex": "#BCB88A",
+    "name": "Sage",
+    "subseason": "True Summer",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Minimalist", "Professional"]
+  },
+  {
+    "hex": "#6A5ACD",
+    "name": "Slate Blue",
+    "subseason": "True Summer",
+    "personality": ["Bold", "Sophisticated"],
+    "lifestyle": ["Active", "Professional"]
+  },
+  {
+    "hex": "#E0B0FF",
+    "name": "Mauve",
+    "subseason": "True Summer",
+    "personality": ["Playful", "Calm"],
+    "lifestyle": ["Creative", "Minimalist"]
+  },
+  {
+    "hex": "#C2B280",
+    "name": "Sand",
+    "subseason": "True Summer",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Minimalist", "Professional"]
+  },
+  {
+    "hex": "#483C32",
+    "name": "Taupe",
+    "subseason": "True Summer",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#6B7B8C",
+    "name": "Smoky Blue",
+    "subseason": "True Summer",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#B39EB5",
+    "name": "Dusty Lavender",
+    "subseason": "True Summer",
+    "personality": ["Playful", "Calm"],
+    "lifestyle": ["Creative", "Minimalist"]
+  },
+  {
+    "hex": "#8A9A5B",
+    "name": "Moss Green",
+    "subseason": "True Summer",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#B38481",
+    "name": "Rosewood",
+    "subseason": "True Summer",
+    "personality": ["Bold", "Sophisticated"],
+    "lifestyle": ["Professional", "Creative"]
+  },
+  {
+    "hex": "#708090",
+    "name": "Slate Gray",
+    "subseason": "True Summer",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#5E7D7E",
+    "name": "Dusty Teal",
+    "subseason": "True Summer",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Creative", "Professional"]
+  }
+]

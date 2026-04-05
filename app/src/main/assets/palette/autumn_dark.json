@@ -1,0 +1,86 @@
+[
+  {
+    "hex": "#4A1C17",
+    "name": "Deep Mahogany",
+    "subseason": "Dark Autumn",
+    "personality": ["Sophisticated", "Bold"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#556B2F",
+    "name": "Deep Olive",
+    "subseason": "Dark Autumn",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#4D5D53",
+    "name": "Deep Moss",
+    "subseason": "Dark Autumn",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Minimalist", "Professional"]
+  },
+  {
+    "hex": "#8A3324",
+    "name": "Burnt Umber",
+    "subseason": "Dark Autumn",
+    "personality": ["Sophisticated", "Bold"],
+    "lifestyle": ["Professional", "Creative"]
+  },
+  {
+    "hex": "#8B2500",
+    "name": "Deep Rust",
+    "subseason": "Dark Autumn",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#645452",
+    "name": "Dark Bronze",
+    "subseason": "Dark Autumn",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Minimalist", "Professional"]
+  },
+  {
+    "hex": "#773F1A",
+    "name": "Walnut",
+    "subseason": "Dark Autumn",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#9B4722",
+    "name": "Deep Terracotta",
+    "subseason": "Dark Autumn",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#800000",
+    "name": "Maroon",
+    "subseason": "Dark Autumn",
+    "personality": ["Sophisticated", "Bold"],
+    "lifestyle": ["Professional", "Creative"]
+  },
+  {
+    "hex": "#228B22",
+    "name": "Forest Green",
+    "subseason": "Dark Autumn",
+    "personality": ["Bold", "Sophisticated"],
+    "lifestyle": ["Creative", "Professional"]
+  },
+  {
+    "hex": "#5C3317",
+    "name": "Dark Chestnut",
+    "subseason": "Dark Autumn",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#996515",
+    "name": "Dark Amber",
+    "subseason": "Dark Autumn",
+    "personality": ["Playful", "Sophisticated"],
+    "lifestyle": ["Creative", "Professional"]
+  }
+]

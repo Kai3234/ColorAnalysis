@@ -1,0 +1,86 @@
+[
+  {
+    "hex": "#3B5998",
+    "name": "Medium Navy",
+    "subseason": "Soft Summer",
+    "personality": ["Sophisticated", "Bold"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#3E8E8E",
+    "name": "Teal",
+    "subseason": "Soft Summer",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Creative", "Professional"]
+  },
+  {
+    "hex": "#8E4585",
+    "name": "Plum",
+    "subseason": "Soft Summer",
+    "personality": ["Sophisticated", "Playful"],
+    "lifestyle": ["Creative", "Professional"]
+  },
+  {
+    "hex": "#71797E",
+    "name": "Steel Gray",
+    "subseason": "Soft Summer",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Minimalist", "Professional"]
+  },
+  {
+    "hex": "#C76B8A",
+    "name": "Muted Rose",
+    "subseason": "Soft Summer",
+    "personality": ["Playful", "Calm"],
+    "lifestyle": ["Creative", "Minimalist"]
+  },
+  {
+    "hex": "#4A7C6F",
+    "name": "Cool Spruce",
+    "subseason": "Soft Summer",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#7366BD",
+    "name": "Blue Violet",
+    "subseason": "Soft Summer",
+    "personality": ["Playful", "Bold"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#4F84C4",
+    "name": "Ocean Blue",
+    "subseason": "Soft Summer",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Active", "Creative"]
+  },
+  {
+    "hex": "#6B4570",
+    "name": "Cool Plum",
+    "subseason": "Soft Summer",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#5B8A8A",
+    "name": "Muted Teal",
+    "subseason": "Soft Summer",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Minimalist", "Professional"]
+  },
+  {
+    "hex": "#5A6D7A",
+    "name": "Cool Slate",
+    "subseason": "Soft Summer",
+    "personality": ["Calm", "Sophisticated"],
+    "lifestyle": ["Minimalist", "Professional"]
+  },
+  {
+    "hex": "#9B3A62",
+    "name": "Raspberry",
+    "subseason": "Soft Summer",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Active", "Creative"]
+  }
+]

@@ -1,0 +1,86 @@
+[
+  {
+    "hex": "#FFBF00",
+    "name": "Amber",
+    "subseason": "True Spring",
+    "personality": ["Playful", "Bold"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#007FFF",
+    "name": "Azure",
+    "subseason": "True Spring",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Active", "Creative"]
+  },
+  {
+    "hex": "#FF6F61",
+    "name": "Coral",
+    "subseason": "True Spring",
+    "personality": ["Playful", "Calm"],
+    "lifestyle": ["Creative", "Minimalist"]
+  },
+  {
+    "hex": "#4CBB17",
+    "name": "Emerald",
+    "subseason": "True Spring",
+    "personality": ["Bold", "Sophisticated"],
+    "lifestyle": ["Professional", "Creative"]
+  },
+  {
+    "hex": "#FF6347",
+    "name": "Warm Poppy",
+    "subseason": "True Spring",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Active", "Creative"]
+  },
+  {
+    "hex": "#FFD700",
+    "name": "Golden",
+    "subseason": "True Spring",
+    "personality": ["Sophisticated", "Bold"],
+    "lifestyle": ["Professional", "Creative"]
+  },
+  {
+    "hex": "#00A86B",
+    "name": "Jade",
+    "subseason": "True Spring",
+    "personality": ["Sophisticated", "Calm"],
+    "lifestyle": ["Professional", "Minimalist"]
+  },
+  {
+    "hex": "#FF9966",
+    "name": "Bright Tangerine",
+    "subseason": "True Spring",
+    "personality": ["Playful", "Calm"],
+    "lifestyle": ["Creative", "Minimalist"]
+  },
+  {
+    "hex": "#FFA500",
+    "name": "Orange",
+    "subseason": "True Spring",
+    "personality": ["Bold", "Playful"],
+    "lifestyle": ["Active", "Creative"]
+  },
+  {
+    "hex": "#FF5C7A",
+    "name": "Warm Watermelon",
+    "subseason": "True Spring",
+    "personality": ["Playful", "Bold"],
+    "lifestyle": ["Creative", "Active"]
+  },
+  {
+    "hex": "#0F52BA",
+    "name": "Sapphire",
+    "subseason": "True Spring",
+    "personality": ["Sophisticated", "Bold"],
+    "lifestyle": ["Professional", "Active"]
+  },
+  {
+    "hex": "#40E0D0",
+    "name": "Turquoise",
+    "subseason": "True Spring",
+    "personality": ["Playful", "Calm"],
+    "lifestyle": ["Active", "Creative"]
+  }
+]

@@ -13,6 +13,8 @@ object Destinations {
 
     const val RESULT = "result/{profileId}"
 
+    const val PREVIEW = "preview"
+
 }
 
 object Routes {
