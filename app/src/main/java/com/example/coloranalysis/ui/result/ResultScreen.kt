@@ -3,6 +3,11 @@ package com.example.coloranalysis.ui.result
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,8 +22,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -26,11 +34,13 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +48,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -68,6 +79,14 @@ fun ResultScreen(
     var isLoading by remember { mutableStateOf(true) }
 
     var processedBitmap by remember { mutableStateOf<Bitmap?>(null) }
+
+
+    val scrollState = rememberScrollState()
+    val showScrollDownIcon by remember {
+        derivedStateOf {
+            scrollState.canScrollForward
+        }
+    }
 
     LaunchedEffect(profileId) {
         withContext(Dispatchers.IO) {
@@ -106,90 +125,119 @@ fun ResultScreen(
             }
         } else {
             profile?.let { p ->
-                Column(
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding)
-                        .padding(horizontal = 20.dp)
-                        .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .padding(padding) // Áp dụng padding của Scaffold vào Box
                 ) {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 20.dp)
+                            .verticalScroll(scrollState),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                    // 1. Tên mùa
-                    Text(
-                        text = p.seasonType ?: "Unknown",
-                        style = MaterialTheme.typography.displaySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.ExtraBold,
-                        textAlign = TextAlign.Center
-                    )
+                        // 1. Tên mùa
+                        Text(
+                            text = p.seasonType ?: "Unknown",
+                            style = MaterialTheme.typography.displaySmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.ExtraBold,
+                            textAlign = TextAlign.Center
+                        )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
 
-                    // 2. PHẦN BẢNG MÀU JSON + LỌC (Sử dụng Component đã tách)
-                    SeasonPaletteDisplay(
-                        seasonName = p.seasonType,
-                        initialPersonalities = p.personalityType ?: emptyList(),
-                        initialLifestyles = p.lifestyleType ?: emptyList(),
-                        onFilterChanged = { pers, life ->
-                            // Lưu vào DB khi người dùng thay đổi filter
-                            scope.launch(Dispatchers.IO) {
-                                db.insertProfile(p.copy(personalityType = pers, lifestyleType = life))
+                        // 2. PHẦN BẢNG MÀU JSON + LỌC (Sử dụng Component đã tách)
+                        SeasonPaletteDisplay(
+                            seasonName = p.seasonType,
+                            initialPersonalities = p.personalityType ?: emptyList(),
+                            initialLifestyles = p.lifestyleType ?: emptyList(),
+                            onFilterChanged = { pers, life ->
+                                // Lưu vào DB khi người dùng thay đổi filter
+                                scope.launch(Dispatchers.IO) {
+                                    db.insertProfile(p.copy(personalityType = pers, lifestyleType = life))
+                                }
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(32.dp))
+                        HorizontalDivider(thickness = 4.dp)
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // 3. PERSONAL SCORES
+                        ScoreCard(p)
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        // 4. DETAILED BREAKDOWN
+                        Text( text = "Thông số kỹ thuật (HSV)", style = MaterialTheme.typography.titleSmall)
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                        ) {
+                            Column(Modifier.padding(8.dp)) {
+                                ColorDetailRow("Da (Skin)", p.skinColor)
+                                ColorDetailRow("Tóc (Hair)", p.hairColor)
+                                ColorDetailRow("Mắt (Eye)", p.eyeColor)
+                                ColorDetailRow("Môi (Lip)", p.lipColor)
                             }
                         }
-                    )
 
-                    Spacer(modifier = Modifier.height(32.dp))
-                    HorizontalDivider(thickness = 4.dp)
-                    Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                    // 3. PERSONAL SCORES
-                    ScoreCard(p)
+                        Text("Ảnh dùng để phân tích", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+                        processedBitmap?.let {
+                            Image(
+                                bitmap = it.asImageBitmap(),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(250.dp)
+                                    .padding(8.dp),
+                                contentScale = ContentScale.Fit
+                            )
+                        }
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                        Spacer(modifier = Modifier.height(40.dp))
 
-                    // 4. DETAILED BREAKDOWN
-                    Text( text = "Thông số kỹ thuật (HSV)", style = MaterialTheme.typography.titleSmall)
-                    Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = navigateToHome,
+                            modifier = Modifier.fillMaxWidth().height(56.dp),
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Text("Về Trang chủ", style = MaterialTheme.typography.titleMedium)
+                        }
 
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                        Spacer(modifier = Modifier.height(32.dp))
+                    }
+
+                    AnimatedVisibility(
+                        visible = showScrollDownIcon,
+                        enter = fadeIn() + slideInVertically { it / 2 }, // Hiệu ứng trượt lên mềm mại
+                        exit = fadeOut() + slideOutVertically { it / 2 },
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 16.dp) // Khoảng cách so với đáy màn hình
                     ) {
-                        Column(Modifier.padding(8.dp)) {
-                            ColorDetailRow("Da (Skin)", p.skinColor)
-                            ColorDetailRow("Tóc (Hair)", p.hairColor)
-                            ColorDetailRow("Mắt (Eye)", p.eyeColor)
-                            ColorDetailRow("Môi (Lip)", p.lipColor)
+                        Box(
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.85f)) // Nền hơi trong suốt
+                                .padding(12.dp) // Làm icon to ra một chút để dễ nhấn (nếu muốn)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = "Cuộn xuống",
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Text("Ảnh dùng để phân tích", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
-                    processedBitmap?.let {
-                        Image(
-                            bitmap = it.asImageBitmap(),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(250.dp)
-                                .padding(8.dp),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(40.dp))
-
-                    Button(
-                        onClick = navigateToHome,
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
-                        shape = RoundedCornerShape(16.dp)
-                    ) {
-                        Text("Về Trang chủ", style = MaterialTheme.typography.titleMedium)
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
                 }
+
+
             }
         }
     }
@@ -206,7 +254,7 @@ data class ColorScores(val hue: Float, val chroma: Float, val value: Float)
  */
 fun scaleHue(hue: Float): Float {
     val min = 0f
-    val max = 50f
+    val max = 40f
     return ((hue - min) / (max - min) * 100f).coerceIn(0f, 100f)
 }
 
