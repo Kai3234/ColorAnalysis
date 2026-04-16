@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -23,6 +25,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -105,7 +108,31 @@ fun PhotoProcessScreen(
         topBar = {
             CenterAlignedTopAppBar(title = { Text("Xử lý hình ảnh") })
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
+        bottomBar = {
+            Surface(
+                modifier = Modifier.navigationBarsPadding(),
+                color = MaterialTheme.colorScheme.background, // Giữ màu nền tệp với app
+                tonalElevation = 4.dp // Tạo đổ bóng nhẹ để tách biệt với nội dung cuộn
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 16.dp)
+                ) {
+                    Button(
+                        onClick = navigateToFaceLandmark,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Text("Tiếp tục phân tích khuôn mặt", style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+            }
+        }
+
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -151,14 +178,7 @@ fun PhotoProcessScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
 
-                Button(
-                    onClick = navigateToFaceLandmark,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Tiếp tục phân tích khuôn mặt")
-                }
             }
         }
     }

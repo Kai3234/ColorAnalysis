@@ -53,6 +53,17 @@ import com.google.mediapipe.tasks.vision.imagesegmenter.ImageSegmenter
 import com.google.mediapipe.tasks.vision.imagesegmenter.ImageSegmenter.ImageSegmenterOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.opencv.android.Utils
+import org.opencv.core.Core
+import org.opencv.core.CvType
+import org.opencv.core.Mat
+import org.opencv.core.MatOfDouble
+import org.opencv.core.MatOfInt
+import org.opencv.core.MatOfPoint
+import org.opencv.core.Point
+import org.opencv.core.Scalar
+import org.opencv.core.Size
+import org.opencv.imgproc.Imgproc
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -140,7 +151,10 @@ fun FaceLandmarkScreen(
                     val landmarks = landmarkResult.faceLandmarks()[0]
 
                     // Define Indices
-                    val skinIndices = intArrayOf(6, 117, 123, 346, 352)
+                    val skinIndices = intArrayOf(
+                        10, 67, 103, 109, 67,   // trán
+                        152, 175,               // cằm
+                    )
                     val eyeIndices = intArrayOf(468, 473) // Iris indices
                     val lipIndices = intArrayOf(11, 15, 72, 86, 302, 316)
 
@@ -423,62 +437,84 @@ private fun extractAndCropRegion(original: Bitmap, buffer: java.nio.ByteBuffer, 
 
 
 private fun getAverageColor(bitmap: Bitmap): Int {
-    var r = 0L; var g = 0L; var b = 0L
-    var count = 0
-    val pixels = IntArray(bitmap.width * bitmap.height)
-    bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+    val src = Mat()
+    Utils.bitmapToMat(bitmap, src)
 
-    for (p in pixels) {
-        // Chỉ tính toán nếu pixel không trong suốt
-        if (android.graphics.Color.alpha(p) > 0) {
-            r += android.graphics.Color.red(p)
-            g += android.graphics.Color.green(p)
-            b += android.graphics.Color.blue(p)
-            count++
-        }
-    }
-    return if (count > 0) {
-        android.graphics.Color.rgb((r/count).toInt(), (g/count).toInt(), (b/count).toInt())
-    } else {
-        android.graphics.Color.TRANSPARENT
-    }
+    // Convert sang LAB (ổn định ánh sáng hơn RGB)
+    val lab = Mat()
+    Imgproc.cvtColor(src, lab, Imgproc.COLOR_RGB2Lab)
+
+    // Blur nhẹ để giảm noise
+    Imgproc.GaussianBlur(lab, lab, Size(5.0, 5.0), 0.0)
+
+    val mean = Core.mean(lab)
+
+    val l = mean.`val`[0]
+    val a = mean.`val`[1]
+    val b = mean.`val`[2]
+
+    val result = MatOfDouble(l, a, b)
+
+    val labPixel = Mat(1, 1, CvType.CV_8UC3)
+    labPixel.put(0, 0, l, a, b)
+
+    val rgb = Mat()
+    Imgproc.cvtColor(labPixel, rgb, Imgproc.COLOR_Lab2RGB)
+
+    val data = ByteArray(3)
+    rgb.get(0, 0, data)
+
+    src.release()
+    lab.release()
+    labPixel.release()
+    rgb.release()
+
+    return Color.rgb(
+        data[0].toInt() and 0xFF,
+        data[1].toInt() and 0xFF,
+        data[2].toInt() and 0xFF
+    )
 }
 private fun getAverageColorFromLandmarks(
     bitmap: Bitmap,
     landmarks: List<com.google.mediapipe.tasks.components.containers.NormalizedLandmark>,
     indices: IntArray
 ): Int {
-    var totalR = 0L
-    var totalG = 0L
-    var totalB = 0L
-    var count = 0
+    val src = Mat()
+    Utils.bitmapToMat(bitmap, src)
+
+    val mask = Mat.zeros(src.size(), CvType.CV_8UC1)
+
+    val points = mutableListOf<Point>()
 
     indices.forEach { index ->
         if (index < landmarks.size) {
             val lm = landmarks[index]
-            val x = (lm.x() * bitmap.width).toInt().coerceIn(0, bitmap.width - 1)
-            val y = (lm.y() * bitmap.height).toInt().coerceIn(0, bitmap.height - 1)
-
-            // Sample a tiny 3x3 patch around each point to avoid single-pixel noise
-            for (i in -1..1) {
-                for (j in -1..1) {
-                    val px = (x + i).coerceIn(0, bitmap.width - 1)
-                    val py = (y + j).coerceIn(0, bitmap.height - 1)
-                    val pixel = bitmap.getPixel(px, py)
-
-                    totalR += android.graphics.Color.red(pixel)
-                    totalG += android.graphics.Color.green(pixel)
-                    totalB += android.graphics.Color.blue(pixel)
-                    count++
-                }
-            }
+            val x = (lm.x() * bitmap.width).toInt()
+            val y = (lm.y() * bitmap.height).toInt()
+            points.add(Point(x.toDouble(), y.toDouble()))
         }
     }
 
-    return if (count > 0) {
-        Color.rgb((totalR / count).toInt(), (totalG / count).toInt(), (totalB / count).toInt())
-    } else {
-        Color.TRANSPARENT
-    }
+    // tạo convex hull để bao vùng da
+    val matOfPoint = MatOfPoint(*points.toTypedArray())
+    val hull = MatOfInt()
+    Imgproc.convexHull(matOfPoint, hull)
+
+    val hullPoints = hull.toArray().map { points[it] }
+    val poly = MatOfPoint(*hullPoints.toTypedArray())
+
+    Imgproc.fillConvexPoly(mask, poly, Scalar(255.0))
+
+    val mean = Core.mean(src, mask)
+
+    src.release()
+    mask.release()
+
+    return Color.rgb(
+        mean.`val`[0].toInt(),
+        mean.`val`[1].toInt(),
+        mean.`val`[2].toInt()
+    )
 }
 

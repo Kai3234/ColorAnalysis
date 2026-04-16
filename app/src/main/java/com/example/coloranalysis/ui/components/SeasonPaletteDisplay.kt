@@ -2,6 +2,7 @@ package com.example.coloranalysis.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -38,7 +40,8 @@ fun SeasonPaletteDisplay(
     seasonName: String?,
     initialPersonalities: List<String> = emptyList(),
     initialLifestyles: List<String> = emptyList(),
-    onFilterChanged: (List<String>, List<String>) -> Unit = { _, _ -> }
+    onFilterChanged: (List<String>, List<String>) -> Unit = { _, _ -> },
+    onColorClick: (Int) -> Unit
 ) {
     val context = LocalContext.current
     var selectedPers by remember { mutableStateOf(initialPersonalities) }
@@ -117,10 +120,19 @@ fun SeasonPaletteDisplay(
                         modifier = Modifier
                             .size(70.dp)
                             .background(
-                                color = androidx.compose.ui.graphics.Color(android.graphics.Color.parseColor(colorItem.hex)),
-                                shape = RoundedCornerShape(12.dp)
+                                Color(android.graphics.Color.parseColor(colorItem.hex)),
+                                RoundedCornerShape(12.dp)
                             )
-                            .border(1.dp, androidx.compose.ui.graphics.Color.LightGray.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                            .border(
+                                1.dp,
+                                Color.LightGray.copy(alpha = 0.3f),
+                                RoundedCornerShape(12.dp)
+                            )
+                            .clickable {
+                                onColorClick(
+                                    android.graphics.Color.parseColor(colorItem.hex)
+                                )
+                            }
                     )
                     Text(
                         text = colorItem.name,

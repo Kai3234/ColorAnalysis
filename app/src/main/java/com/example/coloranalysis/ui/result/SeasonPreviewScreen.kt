@@ -1,5 +1,9 @@
 package com.example.coloranalysis.ui.result
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.example.coloranalysis.data.helper.PaletteHelper
 import com.example.coloranalysis.ui.components.SeasonPaletteDisplay
 
@@ -48,94 +53,122 @@ fun SeasonPreviewScreen(
     // Trạng thái mở/đóng menu chọn mùa
     var expanded by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Khám phá bảng màu") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Quay lại")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+    var previewColor by remember { mutableStateOf<Int?>(null) }
+
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Khám phá bảng màu") },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Quay lại")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
                 )
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 20.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // --- BỘ CHỌN MÙA (DROPDOWN MENU) ---
-            Text(
-                text = "Chọn phân nhóm mùa:",
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.align(Alignment.Start)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded },
-                modifier = Modifier.fillMaxWidth()
+            }
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 20.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                OutlinedTextField(
-                    value = selectedSeason,
-                    onValueChange = {},
-                    readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth(),
-                    leadingIcon = { Icon(Icons.Default.Palette, contentDescription = null) },
-                    shape = MaterialTheme.shapes.medium
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // --- BỘ CHỌN MÙA (DROPDOWN MENU) ---
+                Text(
+                    text = "Chọn phân nhóm mùa:",
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.align(Alignment.Start)
                 )
 
-                ExposedDropdownMenu(
+                Spacer(modifier = Modifier.height(8.dp))
+
+                ExposedDropdownMenuBox(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    onExpandedChange = { expanded = !expanded },
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    PaletteHelper.allSubSeasons.forEach { season ->
-                        DropdownMenuItem(
-                            text = { Text(text = season) },
-                            onClick = {
-                                selectedSeason = season
-                                expanded = false
-                            },
-                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
-                        )
+                    OutlinedTextField(
+                        value = selectedSeason,
+                        onValueChange = {},
+                        readOnly = true,
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth(),
+                        leadingIcon = { Icon(Icons.Default.Palette, contentDescription = null) },
+                        shape = MaterialTheme.shapes.medium
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        PaletteHelper.allSubSeasons.forEach { season ->
+                            DropdownMenuItem(
+                                text = { Text(text = season) },
+                                onClick = {
+                                    selectedSeason = season
+                                    expanded = false
+                                },
+                                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                            )
+                        }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(24.dp))
+                HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // --- HIỂN THỊ BẢNG MÀU VÀ BỘ LỌC ---
+                // Key(selectedSeason) giúp reset lại các filter bên trong khi đổi mùa
+                key(selectedSeason) {
+                    SeasonPaletteDisplay(
+                        seasonName = selectedSeason,
+                        initialPersonalities = emptyList(),
+                        initialLifestyles = emptyList(),
+                        onFilterChanged = { _, _ ->
+                            // Không cần làm gì vì không yêu cầu lưu trạng thái lọc
+                        },
+                        onColorClick = { color ->
+                            previewColor = color
+                        }
+                    )
+
+
+                }
+
+
+
+                Spacer(modifier = Modifier.height(40.dp))
             }
+        }
+        previewColor?.let { colorInt ->
 
-            Spacer(modifier = Modifier.height(24.dp))
-            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // --- HIỂN THỊ BẢNG MÀU VÀ BỘ LỌC ---
-            // Key(selectedSeason) giúp reset lại các filter bên trong khi đổi mùa
-            key(selectedSeason) {
-                SeasonPaletteDisplay(
-                    seasonName = selectedSeason,
-                    initialPersonalities = emptyList(),
-                    initialLifestyles = emptyList(),
-                    onFilterChanged = { _, _ ->
-                        // Không cần làm gì vì không yêu cầu lưu trạng thái lọc
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(colorInt))
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) {
+                        previewColor = null
                     }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(40.dp))
+                    .zIndex(10f) // đảm bảo nổi trên cùng
+            )
         }
     }
 }
+

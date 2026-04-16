@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.example.coloranalysis.data.models.Profile
 import kotlinx.coroutines.flow.Flow
 
@@ -22,6 +23,9 @@ interface ProfileDao {
     @Delete
     suspend fun deleteProfile(profile: Profile)
 
+    @Update
+    suspend fun updateProfile(profile: Profile)
+
     @Query("SELECT * FROM profiles WHERE id = :profileId LIMIT 1")
     suspend fun getProfileById(profileId: Int): Profile?
 
@@ -30,6 +34,10 @@ interface ProfileDao {
 
     @Query("UPDATE profiles SET imgProcessedUri = :uri WHERE id = :profileId")
     suspend fun updateImgProcessed(profileId: Int, uri: String)
+
+
+    @Query("SELECT * FROM profiles WHERE id = :id")
+    fun observeProfile(id: Int): Flow<Profile?>
 
     @Query("""
         UPDATE profiles 
