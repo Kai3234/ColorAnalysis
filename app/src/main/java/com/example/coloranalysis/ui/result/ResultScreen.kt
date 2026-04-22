@@ -73,7 +73,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
-import kotlin.math.min
 import androidx.compose.ui.graphics.Color as ComposeColor
 
 @Composable
@@ -411,34 +410,33 @@ data class ColorScores(val hue: Float, val chroma: Float, val value: Float)
 
 fun scaleHue(rawHue: Float): Float {
 
-    val hue = rawHue % 360f
-    val min = 0f
-    val max = 40f
+    // Fix 1: Xử lý số âm đúng cách (Rất chuẩn xác)
+    val hue = ((rawHue % 360f) + 360f) % 360f
 
-    // ===== 1. SKIN RANGE (0–50) =====
-    if (hue in min..max) {
-        return (hue / max * 100f).coerceIn(0f, 100f)
-    }
+    return when {
+        // ===== VÙNG 1: SKIN RANGE (0–40°) =====
+        // 0° (Hồng/Đỏ) -> Cool (0 điểm)
+        // 40° (Cam/Vàng) -> Warm (100 điểm)
+        hue <= 40f -> {
+            (hue / 40f) * 100f
+        }
 
-    // ===== 2. OUTLIER HANDLING =====
+        // ===== VÙNG 2: QUÁ VÀNG / ÁM XANH LÁ (40°–120°) =====
+        // Điểm ấm giảm dần từ 100 về 0
+        // Tại 40.01° -> ~100 điểm (Khớp hoàn hảo với Vùng 1)
+        // Tại 120° -> 0 điểm
+        hue <= 120f -> {
+            ((120f - hue) / 80f) * 100f
+        }
 
-    val coolHue = 210f   // xanh (cold)
-    val warmHue = 40f    // vàng (warm anchor)
-
-    fun hueDistance(a: Float, b: Float): Float {
-        val diff = abs(a - b)
-        return min(diff, 360f - diff)
-    }
-
-    val distToCool = hueDistance(hue, coolHue)
-    val distToWarm = hueDistance(hue, warmHue)
-
-    val total = distToCool + distToWarm
-
-    val warmRatio = if (total == 0f) 0.5f
-    else distToCool / total
-
-    return (warmRatio * 100f).coerceIn(0f, 100f)
+        // ===== VÙNG 3: OUTLIERS LẠNH (120°–360°) =====
+        // Xanh lam (210°), Tím (270°), Hồng tía/Đỏ lạnh (340°)
+        // Tất cả đều được tính là Undertone LẠNH (0 điểm)
+        // Tại 359.99° -> 0 điểm (Khớp hoàn hảo với mốc 0° của Vùng 1)
+        else -> {
+            0f
+        }
+    }.coerceIn(0f, 100f)
 }
 
 /**

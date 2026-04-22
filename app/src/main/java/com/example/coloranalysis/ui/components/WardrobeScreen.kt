@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,8 +30,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.AlertDialog
@@ -43,6 +44,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
@@ -52,6 +54,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -70,6 +73,8 @@ import androidx.compose.ui.window.Dialog
 import com.example.coloranalysis.R
 import com.example.coloranalysis.data.AppDatabase
 import com.example.coloranalysis.data.helper.ColorHarmonyHelper
+import com.example.coloranalysis.data.helper.PaletteHelper
+import com.example.coloranalysis.data.models.ColorPaletteItem
 import com.example.coloranalysis.data.models.Outfit
 import com.example.coloranalysis.data.models.Profile
 import kotlinx.coroutines.Dispatchers
@@ -93,19 +98,16 @@ fun WardrobeScreen(
     var outfitToRename by remember { mutableStateOf<Outfit?>(null) }
     var outfitToDelete by remember { mutableStateOf<Outfit?>(null) }
 
+    var showAddOptionsDialog by remember { mutableStateOf(false) }
+    var showQuizDialog by remember { mutableStateOf(false) }
+
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = {
-                scope.launch(Dispatchers.IO) {
-                    val newOutfit = Outfit(
-                        profileId = profile.id,
-                        outfitName = "Trang phục ${outfits.size + 1}",
-                        displayOrder = outfits.size
-                    )
-                    db.insertOutfit(newOutfit)
-                }
+                // Thay vì tạo luôn, hiện hộp thoại hỏi người dùng chọn cách tạo
+                showAddOptionsDialog = true
             },
             modifier = Modifier.fillMaxWidth().height(50.dp),
             shape = RoundedCornerShape(12.dp)
@@ -124,12 +126,14 @@ fun WardrobeScreen(
                 pageCount = { outfits.size }
             )
 
-            // ✅ FIX crash khi delete outfit cuối
+            // ✅ TỰ ĐỘNG DI CHUYỂN KHI THÊM TRANG PHỤC MỚI VÀ FIX CRASH KHI XÓA
             LaunchedEffect(outfits.size) {
                 if (outfits.isNotEmpty()) {
                     val lastIndex = outfits.lastIndex
-                    if (pagerState.currentPage > lastIndex) {
-                        pagerState.scrollToPage(lastIndex)
+
+                    // Nếu số lượng trang phục tăng lên (người dùng vừa bấm Thêm), cuộn thẳng tới bộ mới tạo ở cuối
+                    if (pagerState.currentPage != lastIndex) {
+                        pagerState.animateScrollToPage(lastIndex)
                     }
                 }
             }
@@ -226,7 +230,7 @@ fun WardrobeScreen(
                         modifier = Modifier.size(36.dp)
                     ) {
                         Icon(
-                            Icons.Default.ArrowForward,
+                            Icons.AutoMirrored.Filled.ArrowForward,
                             contentDescription = "Next",
                             modifier = Modifier.size(18.dp)
                         )
@@ -346,6 +350,84 @@ fun WardrobeScreen(
             dismissButton = {
                 TextButton(onClick = { outfitToDelete = null }) {
                     Text("Hủy")
+                }
+            }
+        )
+    }
+
+    // ==========================================
+    // 1. DIALOG CHỌN PHƯƠNG THỨC TẠO TRANG PHỤC
+    // ==========================================
+    if (showAddOptionsDialog) {
+        AlertDialog(
+            onDismissRequest = { showAddOptionsDialog = false },
+            title = { Text("Thêm Trang Phục", fontWeight = FontWeight.Bold) },
+            text = { Text("Bạn muốn tự thiết kế tủ đồ trống hay trả lời câu hỏi để hệ thống tự động phối đồ cho bạn?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showAddOptionsDialog = false
+                        showQuizDialog = true // Mở trắc nghiệm
+                    }
+                ) {
+                    Text("Gợi ý tự động")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = {
+                        showAddOptionsDialog = false
+                        // TẠO THỦ CÔNG
+                        scope.launch(Dispatchers.IO) {
+                            val newOutfit = Outfit(
+                                profileId = profile.id,
+                                outfitName = "Trang phục ${outfits.size + 1}",
+                                displayOrder = outfits.size
+                            )
+                            db.insertOutfit(newOutfit)
+                        }
+                    }
+                ) {
+                    Text("Tạo thủ công")
+                }
+            }
+        )
+    }
+
+    // ==========================================
+    // 2. DIALOG TRẮC NGHIỆM (QUIZ)
+    // ==========================================
+    if (showQuizDialog) {
+        OutfitQuizDialog(
+            seasonName = profile.seasonType,
+            onDismiss = { showQuizDialog = false },
+            onQuizComplete = { selectedColor, selectedScheme, q1, q2, q3 ->
+                showQuizDialog = false
+
+                // Rút gọn text trả lời để ghép tên cho hay (Vì text đầy đủ khá dài)
+                val shortPurpose = q1.split(" / ").firstOrNull() ?: "Trang phục" // VD: "Đi làm"
+                val shortVibe = q2.split(",").firstOrNull() ?: ""          // VD: "Quyền lực"
+                val shortStyle = q3.split(",").firstOrNull() ?: ""        // VD: "Văn phòng hiện đại"
+
+                // Đặt tên theo công thức: [Mục đích] - [Tâm trạng]
+                val generatedName = "$shortPurpose - $shortVibe"
+
+                scope.launch(Dispatchers.IO) {
+                    val newOutfit = Outfit(
+                        profileId = profile.id,
+                        outfitName = generatedName,
+                        displayOrder = outfits.size,
+                        mainColor = selectedColor,
+                        colorScheme = selectedScheme
+                    )
+
+                    // Điền full màu cho các món
+                    val autoFilledOutfit = ColorHarmonyHelper.autoFillOutfit(newOutfit)
+
+                    // Lưu vào DB
+                    db.insertOutfit(autoFilledOutfit)
+
+                    // KHÔNG CẦN VIẾT CODE CUỘN Ở ĐÂY (Vì LaunchedEffect bên dưới sẽ tự lo)
                 }
             }
         )
@@ -671,7 +753,7 @@ fun ColorPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Chọn màu") },
+        title = { Text("Chọn màu theo tùy chỉnh cá nhân") },
         text = {
 
             Column {
@@ -893,4 +975,205 @@ fun NumberField(
         singleLine = true,
         modifier = Modifier.width(70.dp)
     )
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun OutfitQuizDialog(
+    seasonName: String?,
+    onDismiss: () -> Unit,
+    onQuizComplete: (mainColor: Int, scheme: String, q1Text: String, q2Text: String, q3Text: String) -> Unit
+) {
+    val context = LocalContext.current
+    var step by remember { mutableIntStateOf(1) }
+
+    // Biến lưu trữ lựa chọn của người dùng
+    var selectedScheme by remember { mutableStateOf("") }
+    var q1BonusTag by remember { mutableStateOf("") } // Tag phụ từ câu 1 để hỗ trợ chọn màu
+    var selectedPers by remember { mutableStateOf("") }
+    var selectedLife by remember { mutableStateOf("") }
+
+    var q1SelectedText by remember { mutableStateOf("") }
+    var q2SelectedText by remember { mutableStateOf("") }
+    var q3SelectedText by remember { mutableStateOf("") }
+
+    // Load FULL dữ liệu màu của Mùa
+    val allColors = remember(seasonName) {
+        val fileName = PaletteHelper.getFileName(seasonName)
+        if (fileName != null) PaletteHelper.loadPalette(context, fileName) else emptyList()
+    }
+
+    // --- CẤU TRÚC CÂU HỎI & MAP TỪ KHÓA ẨN ---
+    // Câu 1: Hoàn cảnh -> Trả về Scheme và Bonus Tag (để cộng điểm màu)
+    val step1Options = listOf(
+        Triple("Đi làm / Buổi họp quan trọng", "Đơn sắc", "Professional"),
+        Triple("Dạo phố / Cà phê cuối tuần", "Liền kề", "Playful"),
+        Triple("Tiệc đêm / Sự kiện nổi bật", "Tương phản", "Bold"),
+        Triple("Triển lãm / Gặp gỡ sáng tạo", "Tam giác", "Creative")
+    )
+
+    // Câu 2: Tâm trạng -> Map về Personality
+    val step2Options = listOf(
+        Pair("Quyền lực, tự tin và thu hút", "Bold"),
+        Pair("Nhẹ nhàng, thư giãn và đáng tin cậy", "Calm"),
+        Pair("Trẻ trung, vui tươi và rạng rỡ", "Playful"),
+        Pair("Thanh lịch, sang trọng và bí ẩn", "Sophisticated")
+    )
+
+    // Câu 3: Môi trường -> Map về Lifestyle
+    val step3Options = listOf(
+        Pair("Văn phòng hiện đại, không gian làm việc", "Professional"),
+        Pair("Studio nghệ thuật, không gian decor độc đáo", "Creative"),
+        Pair("Kiến trúc đơn giản, ít đồ đạc, gọn gàng", "Minimalist"),
+        Pair("Ngoài trời, công viên, phải di chuyển nhiều", "Active")
+    )
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = when (step) {
+                    1 -> "Câu 1/3: Hoàn cảnh"
+                    2 -> "Câu 2/3: Cảm nhận"
+                    else -> "Câu 3/3: Không gian"
+                },
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+        },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                when (step) {
+                    // --- CÂU 1 ---
+                    1 -> {
+                        Text("Bạn đang chuẩn bị trang phục cho dịp nào?", style = MaterialTheme.typography.bodyLarge)
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // TRONG CÂU 1
+                        step1Options.forEach { (text, scheme, bonusTag) ->
+                            QuizOptionButton(text = text) {
+                                selectedScheme = scheme
+                                q1BonusTag = bonusTag
+                                q1SelectedText = text // <-- LƯU TÊN CÂU TRẢ LỜI CÂU 1
+                                step = 2
+                            }
+                        }
+                    }
+
+                    // --- CÂU 2 ---
+                    2 -> {
+                        Text("Nếu dùng một câu để miêu tả cảm giác bạn muốn mang lại hôm nay, đó sẽ là?", style = MaterialTheme.typography.bodyLarge)
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        step2Options.forEach { (text, persKey) ->
+                            QuizOptionButton(text = text) {
+                                selectedPers = persKey
+                                q2SelectedText = text // <-- LƯU TÊN CÂU TRẢ LỜI CÂU 2
+                                step = 3
+                            }
+                        }
+                    }
+
+                    // --- CÂU 3 ---
+                    3 -> {
+                        Text("Bạn cảm thấy mình sẽ tỏa sáng nhất trong môi trường nào dưới đây?", style = MaterialTheme.typography.bodyLarge)
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        step3Options.forEach { (text, lifeKey) ->
+                            QuizOptionButton(text = text) {
+                                selectedLife = lifeKey
+                                q3SelectedText = text
+
+                                // == TÍNH TOÁN ĐIỂM VÀ TÌM MÀU CHỦ ĐẠO ==
+                                val bestColorInt = calculateBestColor(
+                                    allColors = allColors,
+                                    bonusTag = q1BonusTag,     // Điểm cộng từ Câu 1
+                                    targetPers = selectedPers, // Điểm từ Câu 2
+                                    targetLife = selectedLife  // Điểm từ Câu 3
+                                )
+
+                                onQuizComplete(bestColorInt, selectedScheme, q1SelectedText, q2SelectedText, q3SelectedText)
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            if (step == 1) {
+                TextButton(onClick = onDismiss) { Text("Hủy bỏ") }
+            } else {
+                TextButton(onClick = { step -= 1 }) { Text("Quay lại") }
+            }
+        }
+    )
+}
+
+// UI Khối chọn đáp án trắc nghiệm
+@Composable
+fun QuizOptionButton(text: String, onClick: () -> Unit) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        tonalElevation = 2.dp
+    ) {
+        Text(
+            text = text,
+            modifier = Modifier.padding(16.dp),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+// ==========================================
+// THUẬT TOÁN CHẤM ĐIỂM (CẢI TIẾN 3 YẾU TỐ)
+// ==========================================
+private fun calculateBestColor(
+    allColors: List<ColorPaletteItem>,
+    bonusTag: String,
+    targetPers: String,
+    targetLife: String
+): Int {
+    if (allColors.isEmpty()) return android.graphics.Color.GRAY
+
+    // 1. Chấm điểm từng màu
+    val scoredColors = allColors.map { color ->
+        var score = 0
+
+        // Trọng số chính (Tâm trạng & Môi trường)
+        if (color.personality.contains(targetPers)) score += 3
+        if (color.lifestyle.contains(targetLife)) score += 3
+
+        // Trọng số phụ (Hoàn cảnh từ Câu 1)
+        // Kiểm tra xem bonusTag có nằm trong personality HOẶC lifestyle của màu này không
+        if (color.personality.contains(bonusTag) || color.lifestyle.contains(bonusTag)) {
+            score += 2
+        }
+
+        Pair(color, score)
+    }
+
+    // 2. Tìm mức điểm cao nhất
+    val maxScore = scoredColors.maxOfOrNull { it.second } ?: 0
+
+    // 3. Lấy TẤT CẢ các màu đạt đỉnh
+    val topColors = scoredColors.filter { it.second == maxScore }.map { it.first }
+
+    // 4. Chọn ngẫu nhiên 1 màu (Giúp mỗi lần làm Quiz có thể ra 1 tone màu khác biệt trong cùng nhóm)
+    val bestColor = topColors.randomOrNull() ?: allColors.first()
+
+    // 5. Convert sang Int
+    return try {
+        val hexString = bestColor.hex
+        val safeHex = if (hexString.startsWith("#")) hexString else "#$hexString"
+        android.graphics.Color.parseColor(safeHex)
+    } catch (e: Exception) {
+        android.graphics.Color.GRAY
+    }
 }

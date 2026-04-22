@@ -6,30 +6,46 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.net.Uri
 import android.util.Log
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +56,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.coloranalysis.data.AppDatabase
 import com.example.coloranalysis.ui.photo.loadBitmapFromUri
@@ -74,6 +91,13 @@ fun FaceLandmarkScreen(
 ) {
     val context = LocalContext.current
     val db = remember { AppDatabase.getDatabase(context).profileDao() }
+
+    val scrollState = rememberScrollState()
+
+    // Kiểm tra xem màn hình có thể cuộn xuống nữa không
+    val showScrollDownIcon by remember {
+        derivedStateOf { scrollState.canScrollForward }
+    }
 
     // Display States
     var maskedBitmap by remember { mutableStateOf<Bitmap?>(null) }
@@ -208,85 +232,180 @@ fun FaceLandmarkScreen(
         topBar = {
             CenterAlignedTopAppBar(title = { Text("Phân tích đặc điểm") })
         },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(statusMessage, color = MaterialTheme.colorScheme.secondary)
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (isProcessing) {
-                CircularProgressIndicator(modifier = Modifier.padding(top = 20.dp))
-            } else {
-                // 1. MAIN IMAGE PREVIEW (Giữ nguyên)
-                maskedBitmap?.let {
-                    Image(
-                        bitmap = it.asImageBitmap(),
-                        contentDescription = "Masked Preview",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(350.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp)),
-                        contentScale = ContentScale.Fit
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-                Text("Kết quả chi tiết", style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // 2. HIỂN THỊ VÙNG TÓC ĐÃ TÁCH
-                hairBitmap?.let {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Image(
-                            bitmap = it.asImageBitmap(),
-                            contentDescription = "Hair Region",
-                            modifier = Modifier
-                                .size(120.dp)
-                                .clip(RoundedCornerShape(8.dp)),
-                            contentScale = ContentScale.Crop
-                        )
-                        Text("Vùng tóc", style = MaterialTheme.typography.labelSmall)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-                Text("Bảng màu nhận diện", style = MaterialTheme.typography.titleSmall)
-
-                // 3. DÃY MÀU KẾT QUẢ (Tóc, Da, Mắt, Môi)
-                Row(
+        bottomBar = {
+            Surface(
+                modifier = Modifier.navigationBarsPadding(),
+                color = MaterialTheme.colorScheme.background, // Giữ màu nền tệp với app
+                tonalElevation = 4.dp // Tạo viền mờ tách biệt với nội dung cuộn
+            ) {
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                        .padding(horizontal = 20.dp, vertical = 16.dp)
                 ) {
-                    ColorChip("Màu Tóc", hairColor ?: android.graphics.Color.DKGRAY)
-                    ColorChip("Màu Da", skinColor ?: android.graphics.Color.GRAY)
-                    ColorChip("Màu Mắt", eyeColor ?: android.graphics.Color.BLACK)
-                    ColorChip("Màu Môi", lipColor ?: android.graphics.Color.RED)
+                    Button(
+                        onClick = navigateToResult,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        enabled = !isProcessing,
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Text(
+                            text = if (isProcessing) "Đang phân tích..." else "Xem Kết Quả",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+
+            // 1. NỘI DUNG CUỘN (COLUMN)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(horizontal = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = statusMessage,
+                    color = if (isProcessing) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                if (isProcessing) {
+                    Box(modifier = Modifier.height(350.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(modifier = Modifier.size(60.dp))
+                    }
+                } else {
+                    // MAIN IMAGE PREVIEW
+                    maskedBitmap?.let {
+                        Card(
+                            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                            shape = RoundedCornerShape(20.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Image(
+                                bitmap = it.asImageBitmap(),
+                                contentDescription = "Masked Preview",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(350.dp)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    // CARD KẾT QUẢ CHI TIẾT
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Kết quả tách",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            hairBitmap?.let {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Image(
+                                        bitmap = it.asImageBitmap(),
+                                        contentDescription = "Hair Region",
+                                        modifier = Modifier
+                                            .size(100.dp)
+                                            .clip(CircleShape)
+                                            .border(2.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text("Vùng tóc nội suy", style = MaterialTheme.typography.labelMedium)
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(24.dp))
+                            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Text("Màu của các đặc điểm", style = MaterialTheme.typography.titleSmall)
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceAround
+                            ) {
+                                ColorChip("Tóc", hairColor ?: android.graphics.Color.DKGRAY)
+                                ColorChip("Da", skinColor ?: android.graphics.Color.GRAY)
+                                ColorChip("Mắt", eyeColor ?: android.graphics.Color.BLACK)
+                                ColorChip("Môi", lipColor ?: android.graphics.Color.RED)
+                            }
+                        }
+                    }
+
+                    // Khoảng trống dưới cùng để cuộn lên được thoải mái
+                    Spacer(modifier = Modifier.height(60.dp))
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
-
-            Button(
-                onClick = navigateToResult,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                enabled = !isProcessing
+            // 2. ICON CUỘN XUỐNG
+            // Do nằm chung trong "BOX TỔNG" nên nó tự động bị đẩy lên trên BottomBar
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 16.dp), // Đẩy icon lên cách mép BottomBar 16dp
+                contentAlignment = Alignment.BottomCenter
             ) {
-                Text("Tiếp tục")
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = showScrollDownIcon && !isProcessing,
+                    enter = fadeIn() + slideInVertically { it / 2 },
+                    exit = fadeOut() + slideOutVertically { it / 2 }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.9f))
+                            .padding(10.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowDown,
+                            contentDescription = "Cuộn xuống",
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+                }
             }
         }
     }
-
 
 }
 

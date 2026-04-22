@@ -159,7 +159,7 @@ fun PhotoScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // --- 2. CÁC NÚT CHỨC NĂNG ---
             Row(

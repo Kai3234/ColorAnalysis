@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,6 +60,17 @@ fun SeasonPaletteDisplay(
             val matchPers = selectedPers.isEmpty() || color.personality.any { it in selectedPers }
             val matchLife = selectedLife.isEmpty() || color.lifestyle.any { it in selectedLife }
             matchPers && matchLife
+        }
+    }
+
+    // Load và lọc dữ liệu màu nên tránh
+    val avoidColors = remember(seasonName) {
+        val allAvoid = PaletteHelper.loadAvoidColors(context)
+        if (seasonName != null) {
+            // Chỉ lấy những màu mà trong danh sách subseason của nó có chứa tên mùa hiện tại
+            allAvoid.filter { it.subseason.contains(seasonName) }
+        } else {
+            emptyList()
         }
     }
 
@@ -112,6 +124,10 @@ fun SeasonPaletteDisplay(
             horizontalArrangement = Arrangement.Center
         ) {
             filteredColors.forEach { colorItem ->
+                // Fix an toàn mã Hex (tránh crash nếu thiếu dấu #)
+                val safeHex = if (colorItem.hex.startsWith("#")) colorItem.hex else "#${colorItem.hex}"
+                val parsedColorInt = try { android.graphics.Color.parseColor(safeHex) } catch (e: Exception) { android.graphics.Color.GRAY }
+
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(6.dp)
@@ -119,20 +135,9 @@ fun SeasonPaletteDisplay(
                     Box(
                         modifier = Modifier
                             .size(70.dp)
-                            .background(
-                                Color(android.graphics.Color.parseColor(colorItem.hex)),
-                                RoundedCornerShape(12.dp)
-                            )
-                            .border(
-                                1.dp,
-                                Color.LightGray.copy(alpha = 0.3f),
-                                RoundedCornerShape(12.dp)
-                            )
-                            .clickable {
-                                onColorClick(
-                                    android.graphics.Color.parseColor(colorItem.hex)
-                                )
-                            }
+                            .background(Color(parsedColorInt), RoundedCornerShape(12.dp))
+                            .border(1.dp, Color.LightGray.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                            .clickable { onColorClick(parsedColorInt) }
                     )
                     Text(
                         text = colorItem.name,
@@ -142,6 +147,54 @@ fun SeasonPaletteDisplay(
                         modifier = Modifier.width(70.dp),
                         textAlign = TextAlign.Center
                     )
+                }
+            }
+        }
+
+        // --- THÊM MỚI: HIỂN THỊ MÀU NÊN TRÁNH ---
+        if (avoidColors.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(24.dp))
+            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Màu nên tránh (${avoidColors.size})",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.error // Dùng màu đỏ để cảnh báo
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                avoidColors.forEach { avoidItem ->
+                    // Fix an toàn mã Hex
+                    val safeHex = if (avoidItem.hex.startsWith("#")) avoidItem.hex else "#${avoidItem.hex}"
+                    val parsedColorInt = try { android.graphics.Color.parseColor(safeHex) } catch (e: Exception) { android.graphics.Color.GRAY }
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(6.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(70.dp)
+                                .background(Color(parsedColorInt), RoundedCornerShape(12.dp))
+                                .border(1.dp, Color.LightGray.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                                // Bấm vào vẫn bật xem fullscreen được bình thường
+                                .clickable { onColorClick(parsedColorInt) }
+                        )
+                        Text(
+                            text = avoidItem.name,
+                            style = MaterialTheme.typography.labelSmall,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.width(70.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
         }

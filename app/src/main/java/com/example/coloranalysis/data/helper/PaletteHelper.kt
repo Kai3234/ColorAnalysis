@@ -1,6 +1,7 @@
 package com.example.coloranalysis.data.helper
 
 import android.content.Context
+import com.example.coloranalysis.data.models.AvoidColorItem
 import com.example.coloranalysis.data.models.ColorPaletteItem
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -48,6 +49,16 @@ object PaletteHelper {
         return try {
             val jsonString = context.assets.open("palette/$fileName").bufferedReader().use { it.readText() }
             val listType = object : TypeToken<List<ColorPaletteItem>>() {}.type
+            Gson().fromJson(jsonString, listType)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    fun loadAvoidColors(context: Context): List<AvoidColorItem> {
+        return try {
+            val jsonString = context.assets.open("palette/extends/colors_avoid.json").bufferedReader().use { it.readText() }
+            val listType = object : TypeToken<List<AvoidColorItem>>() {}.type
             Gson().fromJson(jsonString, listType)
         } catch (e: Exception) {
             emptyList()

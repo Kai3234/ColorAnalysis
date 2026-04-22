@@ -15,22 +15,27 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -51,7 +56,9 @@ import androidx.compose.ui.unit.sp
 import com.example.coloranalysis.data.AppDatabase
 import com.example.coloranalysis.data.SeasonData
 import com.example.coloranalysis.data.models.Profile
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -71,100 +78,79 @@ fun HomeScreen(
 
     val profiles by db.getAllProfiles().collectAsState(initial = emptyList())
 
-    var showDialog by remember { mutableStateOf(false) }
-    var profileName by remember { mutableStateOf("") }
-    Scaffold (
-        modifier = Modifier.fillMaxSize(),
+    // States cho các Dialog
+    var showAddDialog by remember { mutableStateOf(false) }
+    var newProfileName by remember { mutableStateOf("") }
+
+    var profileToRename by remember { mutableStateOf<Profile?>(null) }
+    var renameValue by remember { mutableStateOf("") }
+
+    var profileToDelete by remember { mutableStateOf<Profile?>(null) }
+
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Color Analysis", fontWeight = FontWeight.Bold) },
                 actions = {
-                    // Nút Khám phá bảng màu nằm ở góc trên bên phải
                     IconButton(onClick = navigateToPreview) {
-                        Icon(
-                            imageVector = Icons.Default.Palette,
-                            contentDescription = "Khám phá bảng màu",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                        Icon(Icons.Default.Palette, "Khám phá bảng màu", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showDialog = true },
+                onClick = { showAddDialog = true },
                 shape = MaterialTheme.shapes.medium,
-
                 modifier = Modifier.padding(16.dp)
-
             ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Thêm"
-                )
+                Icon(Icons.Default.Add, "Thêm")
             }
         },
         floatingActionButtonPosition = FabPosition.Center
-    ) {
-        innerPadding ->
+    ) { innerPadding ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+            modifier = Modifier.fillMaxSize().padding(innerPadding)
         ) {
             if (profiles.isEmpty()) {
-                // Nếu không có gì
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .align(Alignment.Center),
+                    modifier = Modifier.fillMaxSize().align(Alignment.Center),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = "Không có phân tích nào.",
-                        fontSize = 24.sp,
-                        modifier = Modifier.padding(16.dp),
-                    )
-                    Text(
-                        text = "Bấm + để bắt đầu.",
-                        fontSize = 24.sp,
-                        modifier = Modifier.padding(16.dp)
-                    )
+                    Text("Không có phân tích nào.", fontSize = 24.sp, modifier = Modifier.padding(16.dp))
+                    Text("Bấm + để bắt đầu.", fontSize = 24.sp, modifier = Modifier.padding(16.dp))
                 }
             } else {
-                // Danh sách hồ sơ
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp)
                 ) {
-                    items(profiles) { profile ->
-                        val isInvalidSeason =
-                            profile.seasonType.isNullOrBlank()
+                    // Sắp xếp đảm bảo thời gian mới nhất lên đầu
+                    items(profiles.sortedByDescending { it.dateCreated }) { profile ->
+                        val isInvalidSeason = profile.seasonType.isNullOrBlank()
 
                         ProfileCard(
                             profile = profile,
-                            onDeleteClick = {
-                                coroutineScope.launch {
-                                    db.deleteProfile(profile)
+                            onCardClick = {
+                                if (!isInvalidSeason) navigateToResult(profile.id)
+                                else Toast.makeText(context, "Profile lỗi. Vui lòng xóa.", Toast.LENGTH_SHORT).show()
+                            },
+                            onRenameClick = {
+                                profileToRename = profile
+                                renameValue = profile.profileName
+                            },
+                            onMoveToTopClick = {
+                                // Mẹo thay đổi thứ tự: Cập nhật thời gian thành hiện tại để nó nổi lên đầu
+                                coroutineScope.launch(Dispatchers.IO) {
+                                    db.updateProfile(profile.copy(dateCreated = System.currentTimeMillis()))
                                 }
                             },
-                            onCardClick = {
-                                if (!isInvalidSeason) {
-                                    navigateToResult(profile.id)
-                                } else {
-                                    Toast.makeText(
-                                        context,
-                                        "Profile không có kết quả phân tích hoặc lỗi. Vui lòng xóa.",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
+                            onDeleteClick = {
+                                profileToDelete = profile
                             }
                         )
                     }
@@ -172,68 +158,110 @@ fun HomeScreen(
             }
         }
     }
-    // Dialog
-    if (showDialog) {
+
+    // --- DIALOG THÊM MỚI ---
+    if (showAddDialog) {
         AlertDialog(
-            onDismissRequest = { showDialog = false },
+            onDismissRequest = { showAddDialog = false },
+            title = { Text("Tên hồ sơ phân tích") },
+            text = {
+                OutlinedTextField(
+                    value = newProfileName,
+                    onValueChange = { newProfileName = it },
+                    textStyle = TextStyle(fontSize = 20.sp),
+                    singleLine = true
+                )
+            },
             confirmButton = {
                 Button(
                     onClick = {
-                        showDialog = false
-
-                        coroutineScope.launch {
-                            val newProfile = Profile(
-                                profileName = profileName,
-                                dateCreated = System.currentTimeMillis() // Saves current time
-                            )
-                            val newProfileId = db.insertProfile(newProfile).toInt()
-
-                            profileName = "" // Reset name for next time
-                            navigateToPhoto(newProfileId)
+                        showAddDialog = false
+                        coroutineScope.launch(Dispatchers.IO) {
+                            val newProfile = Profile(profileName = newProfileName, dateCreated = System.currentTimeMillis())
+                            val newId = db.insertProfile(newProfile).toInt()
+                            withContext(Dispatchers.Main) {
+                                newProfileName = ""
+                                navigateToPhoto(newId)
+                            }
                         }
                     },
-                    enabled = profileName.isNotBlank()
-                ) {
-                    Text("Tiếp theo")
-                }
+                    enabled = newProfileName.isNotBlank()
+                ) { Text("Tiếp theo") }
             },
-            dismissButton = {
-                Button(
-                    onClick = { showDialog = false }
-                ) {
-                    Text("Đóng")
-                }
-            },
-            title = { Text("Tên hồ sơ phân tích ") },
+            dismissButton = { TextButton(onClick = { showAddDialog = false }) { Text("Đóng") } }
+        )
+    }
+
+    // --- DIALOG ĐỔI TÊN ---
+    if (profileToRename != null) {
+        AlertDialog(
+            onDismissRequest = { profileToRename = null },
+            title = { Text("Đổi tên hồ sơ") },
             text = {
-                TextField(
-                    value = profileName,
-                    onValueChange = { profileName = it },
-                    textStyle = TextStyle(fontSize = 24.sp),
+                OutlinedTextField(
+                    value = renameValue,
+                    onValueChange = { renameValue = it },
+                    singleLine = true
                 )
-            }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        coroutineScope.launch(Dispatchers.IO) {
+                            db.updateProfile(profileToRename!!.copy(profileName = renameValue))
+                            withContext(Dispatchers.Main) { profileToRename = null }
+                        }
+                    },
+                    enabled = renameValue.isNotBlank()
+                ) { Text("Lưu") }
+            },
+            dismissButton = { TextButton(onClick = { profileToRename = null }) { Text("Hủy") } }
+        )
+    }
+
+    // --- DIALOG XÁC NHẬN XÓA ---
+    if (profileToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { profileToDelete = null },
+            title = { Text("Xóa hồ sơ") },
+            text = { Text("Bạn có chắc chắn muốn xóa hồ sơ '${profileToDelete!!.profileName}' không? Dữ liệu tủ đồ liên quan cũng sẽ bị xóa.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        coroutineScope.launch(Dispatchers.IO) {
+                            db.deleteProfile(profileToDelete!!)
+                            withContext(Dispatchers.Main) { profileToDelete = null }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) { Text("Xóa") }
+            },
+            dismissButton = { TextButton(onClick = { profileToDelete = null }) { Text("Hủy") } }
         )
     }
 }
 
+// ==========================================
+// THẺ PROFILE
+// ==========================================
 @Composable
 fun ProfileCard(
     profile: Profile,
-    onDeleteClick: () -> Unit,
-    onCardClick: () -> Unit
+    onCardClick: () -> Unit,
+    onRenameClick: () -> Unit,
+    onMoveToTopClick: () -> Unit,
+    onDeleteClick: () -> Unit
 ) {
     val dateFormat = SimpleDateFormat("dd/MM/yyyy - HH:mm", Locale.getDefault())
     val dateString = dateFormat.format(Date(profile.dateCreated))
 
-    // 1. Lấy màu nền, nếu null dùng surfaceContainer thay vì surface
+    // 1. Tính toán màu sắc
     val backgroundColor = SeasonData.palettes[profile.seasonType ?: ""]?.uiColor
         ?: MaterialTheme.colorScheme.surfaceContainerHigh
-
-    // 2. Tự động tính toán màu chữ dựa trên độ sáng của nền (Đảm bảo luôn đọc được)
     val contentColor = if (backgroundColor.luminance() > 0.5f) Color.Black else Color.White
-
-    // Màu phụ cho ngày tháng (giảm độ đậm một chút)
     val secondaryContentColor = contentColor.copy(alpha = 0.7f)
+
+    var expanded by remember { mutableStateOf(false) }
 
     Card(
         onClick = onCardClick,
@@ -241,13 +269,11 @@ fun ProfileCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = backgroundColor,
-            contentColor = contentColor // Thiết lập mặc định cho các component con
+            contentColor = contentColor
         )
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -257,13 +283,12 @@ fun ProfileCard(
                         text = profile.profileName,
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.weight(1f),
-                        color = contentColor // Áp dụng màu tương phản
+                        color = contentColor
                     )
-
                     Text(
-                        text = profile.seasonType ?: "Unknown",
+                        text = profile.seasonType ?: "Chưa phân tích",
                         style = MaterialTheme.typography.labelLarge,
-                        color = contentColor // Áp dụng màu tương phản
+                        color = contentColor
                     )
                 }
 
@@ -271,16 +296,33 @@ fun ProfileCard(
                 Text(
                     text = dateString,
                     style = MaterialTheme.typography.bodySmall,
-                    color = secondaryContentColor // Màu phụ rõ trên nền tương ứng
+                    color = secondaryContentColor
                 )
             }
 
-            IconButton(onClick = onDeleteClick) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Xóa",
-                    tint = contentColor // Icon cũng tự đổi màu theo nền
-                )
+            // MENU 3 CHẤM
+            Box {
+                IconButton(onClick = { expanded = true }) {
+                    Icon(Icons.Default.MoreVert, "Tùy chọn", tint = contentColor)
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Đổi tên") },
+                        onClick = { expanded = false; onRenameClick() }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Đặt lên đầu") },
+                        onClick = { expanded = false; onMoveToTopClick() }
+                    )
+                    HorizontalDivider()
+                    DropdownMenuItem(
+                        text = { Text("Xóa", color = MaterialTheme.colorScheme.error) },
+                        onClick = { expanded = false; onDeleteClick() }
+                    )
+                }
             }
         }
     }
