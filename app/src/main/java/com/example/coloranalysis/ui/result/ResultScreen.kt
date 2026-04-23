@@ -410,29 +410,33 @@ data class ColorScores(val hue: Float, val chroma: Float, val value: Float)
 
 fun scaleHue(rawHue: Float): Float {
 
-    // Fix 1: Xử lý số âm đúng cách (Rất chuẩn xác)
+    // Xử lý an toàn vòng tròn 360 độ (bảo vệ trường hợp số âm)
     val hue = ((rawHue % 360f) + 360f) % 360f
 
     return when {
-        // ===== VÙNG 1: SKIN RANGE (0–40°) =====
-        // 0° (Hồng/Đỏ) -> Cool (0 điểm)
-        // 40° (Cam/Vàng) -> Warm (100 điểm)
-        hue <= 40f -> {
-            (hue / 40f) * 100f
+        // ===== VÙNG 1: NGOẠI LỆ HỒNG/ĐỎ (0° - 4°) =====
+        // Dưới 4° là vùng undertone lạnh (Cool), giữ mức 0 điểm.
+        hue < 4f -> {
+            0f
         }
 
-        // ===== VÙNG 2: QUÁ VÀNG / ÁM XANH LÁ (40°–120°) =====
-        // Điểm ấm giảm dần từ 100 về 0
-        // Tại 40.01° -> ~100 điểm (Khớp hoàn hảo với Vùng 1)
+        // ===== VÙNG 2: SKIN RANGE CHUẨN (4° - 33°) =====
+        // 4° -> Cool (0 điểm)
+        // 33° -> Warm (100 điểm)
+        hue <= 33f -> {
+            ((hue - 4f) / (33f - 4f)) * 100f
+        }
+
+        // ===== VÙNG 3: NGOẠI LỆ ÁM VÀNG / XANH LÁ (33° - 120°) =====
+        // Trượt dốc mềm mại từ cực Ấm (100) về cực Lạnh (0)
+        // Tại 33.01° -> ~100 điểm (Nối tiếp hoàn hảo với Vùng 2)
         // Tại 120° -> 0 điểm
         hue <= 120f -> {
-            ((120f - hue) / 80f) * 100f
+            ((120f - hue) / (120f - 33f)) * 100f
         }
 
-        // ===== VÙNG 3: OUTLIERS LẠNH (120°–360°) =====
-        // Xanh lam (210°), Tím (270°), Hồng tía/Đỏ lạnh (340°)
-        // Tất cả đều được tính là Undertone LẠNH (0 điểm)
-        // Tại 359.99° -> 0 điểm (Khớp hoàn hảo với mốc 0° của Vùng 1)
+        // ===== VÙNG 4: NGOẠI LỆ LẠNH / XANH LAM / TÍM (120° - 360°) =====
+        // Mọi vùng màu từ xanh lá mạ tới đỏ tía đều được tính là undertone Lạnh (0 điểm)
         else -> {
             0f
         }
@@ -440,22 +444,22 @@ fun scaleHue(rawHue: Float): Float {
 }
 
 /**
- * Chroma: 0.13 (Muted/Soft) -> 0.85 (Clear/Bright)
+ * Chroma: 0.0 (Muted/Soft) -> 1.0 (Clear/Bright)
  * Scaled: 0 (Soft) -> 100 (Bright)
  */
 fun scaleChroma(chroma: Float): Float {
-    val min = 0.13f
-    val max = 0.85f
+    val min = 0.0f
+    val max = 1.0f
     return ((chroma - min) / (max - min) * 100f).coerceIn(0f, 100f)
 }
 
 /**
- * Value: 0.18 (Dark) -> 0.75 (Light)
+ * Value: 0.0 (Dark) -> 1.0 (Light)
  * Scaled: 0 (Dark) -> 100 (Light)
  */
 fun scaleValue(value: Float): Float {
-    val min = 0.10f
-    val max = 0.90f
+    val min = 0.0f
+    val max = 1.0f
     return ((value - min) / (max - min) * 100f).coerceIn(0f, 100f)
 }
 

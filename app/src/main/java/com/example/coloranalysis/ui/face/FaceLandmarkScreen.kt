@@ -79,7 +79,6 @@ import org.opencv.core.MatOfInt
 import org.opencv.core.MatOfPoint
 import org.opencv.core.Point
 import org.opencv.core.Scalar
-import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
 
 
@@ -175,18 +174,16 @@ fun FaceLandmarkScreen(
                     val landmarks = landmarkResult.faceLandmarks()[0]
 
                     // Define Indices
-                    val skinIndices = intArrayOf(
-                        10, 67, 103, 109, 67,   // trán
-                        152, 175,               // cằm
-                    )
-                    val eyeIndices = intArrayOf(468, 473) // Iris indices
-                    val lipIndices = intArrayOf(11, 15, 72, 86, 302, 316)
+                    val skinIndices = intArrayOf(10, 67, 103, 109, 67)
+                    val eyeIndices = intArrayOf(468, 473) // Tâm Iris (Tròng đen) trái và phải
+                    val lipIndices = intArrayOf(85, 86, 315, 316)
+
 
                     // A: Calculate Average Colors
-                    val sColor = getAverageColorFromLandmarks(original, landmarks, skinIndices)
-                    val eColor = getAverageColorFromLandmarks(original, landmarks, eyeIndices)
-                    val lColor = getAverageColorFromLandmarks(original, landmarks, lipIndices)
-
+                    // Da và Môi để mặc định isEyeRegion = false (Dùng ConvexHull)
+                    val sColor = getAverageColorFromLandmarks(original, landmarks, skinIndices, FaceRegion.SKIN)
+                    val eColor = getAverageColorFromLandmarks(original, landmarks, eyeIndices, FaceRegion.EYE)
+                    val lColor = getAverageColorFromLandmarks(original, landmarks, lipIndices, FaceRegion.LIP)
                     // 1. Save the final masked preview to a file (Internal Storage)
 
                     // 2. SAVE TO DATABASE
@@ -563,9 +560,6 @@ private fun getAverageColor(bitmap: Bitmap): Int {
     val lab = Mat()
     Imgproc.cvtColor(src, lab, Imgproc.COLOR_RGB2Lab)
 
-    // Blur nhẹ để giảm noise
-    Imgproc.GaussianBlur(lab, lab, Size(5.0, 5.0), 0.0)
-
     val mean = Core.mean(lab)
 
     val l = mean.`val`[0]
@@ -594,16 +588,21 @@ private fun getAverageColor(bitmap: Bitmap): Int {
         data[2].toInt() and 0xFF
     )
 }
+
+// Enum định nghĩa vùng cần lấy mẫu
+enum class FaceRegion { EYE, SKIN, LIP }
+
 private fun getAverageColorFromLandmarks(
     bitmap: Bitmap,
     landmarks: List<com.google.mediapipe.tasks.components.containers.NormalizedLandmark>,
-    indices: IntArray
+    indices: IntArray,
+    regionType: FaceRegion
 ): Int {
     val src = Mat()
     Utils.bitmapToMat(bitmap, src)
 
+    // Mask đen (0)
     val mask = Mat.zeros(src.size(), CvType.CV_8UC1)
-
     val points = mutableListOf<Point>()
 
     indices.forEach { index ->
@@ -615,25 +614,52 @@ private fun getAverageColorFromLandmarks(
         }
     }
 
-    // tạo convex hull để bao vùng da
-    val matOfPoint = MatOfPoint(*points.toTypedArray())
-    val hull = MatOfInt()
-    Imgproc.convexHull(matOfPoint, hull)
+    if (points.isEmpty()) {
+        src.release(); mask.release()
+        return Color.BLACK
+    }
 
-    val hullPoints = hull.toArray().map { points[it] }
-    val poly = MatOfPoint(*hullPoints.toTypedArray())
+    when (regionType) {
+        FaceRegion.EYE -> {
+            // MẮT: Vẽ vòng tròn rất nhỏ (bán kính ~ 1.5%) tại tâm 2 tròng đen
+            val radius = (bitmap.width * 0.015).toInt().coerceAtLeast(2)
+            for (pt in points) {
+                Imgproc.circle(mask, pt, radius, Scalar(255.0), -1)
+            }
+        }
 
-    Imgproc.fillConvexPoly(mask, poly, Scalar(255.0))
+        FaceRegion.SKIN -> {
+            // DA: Vẽ các mảng hình tròn (bán kính ~ 4-5%)
+            // Bán kính lớn hơn để lấy trung bình được nhiều lỗ chân lông/vùng da hơn, giảm nhiễu cục bộ.
+            val radius = (bitmap.width * 0.04).toInt().coerceAtLeast(5)
+            for (pt in points) {
+                Imgproc.circle(mask, pt, radius, Scalar(255.0), -1)
+            }
+        }
 
+        FaceRegion.LIP -> {
+            // MÔI: Do môi có hình dáng dài mảnh, ta vẫn dùng ConvexHull để bao quanh khối
+            val matOfPoint = MatOfPoint(*points.toTypedArray())
+            val hull = MatOfInt()
+            Imgproc.convexHull(matOfPoint, hull)
+
+            val hullPoints = hull.toArray().map { points[it] }
+            val poly = MatOfPoint(*hullPoints.toTypedArray())
+
+            Imgproc.fillConvexPoly(mask, poly, Scalar(255.0))
+        }
+    }
+
+    // Tính giá trị trung bình chỉ tại những điểm có màu trắng (255) trên Mask
     val mean = Core.mean(src, mask)
 
     src.release()
     mask.release()
 
     return Color.rgb(
-        mean.`val`[0].toInt(),
-        mean.`val`[1].toInt(),
-        mean.`val`[2].toInt()
+        mean.`val`[0].toInt().coerceIn(0, 255),
+        mean.`val`[1].toInt().coerceIn(0, 255),
+        mean.`val`[2].toInt().coerceIn(0, 255)
     )
 }
 
