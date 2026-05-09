@@ -24,7 +24,7 @@ object ColorHarmonyHelper {
         }
     }
 
-    // ---------- 1. ĐƠN SẮC (MONOCHROME) ----------
+    // 1. ĐƠN SẮC (MONOCHROME)
     private fun monochrome(base: Int, o: Outfit): Outfit {
         return o.copy(
             topColor = base,
@@ -36,52 +36,49 @@ object ColorHarmonyHelper {
         )
     }
 
-    // ---------- 2. TƯƠNG PHẢN (COMPLEMENTARY) ----------
+    // 2. TƯƠNG PHẢN (COMPLEMENTARY)
     private fun complementary(base: Int, o: Outfit): Outfit {
         val comp = rotateHue(base, 180f)
 
         return o.copy(
             topColor = base,
-            bottomColor = darkenHue(comp),   // Quần: Màu Tương phản (VD: Cam -> Quần Xanh dương tối)
+            bottomColor = darkenHue(comp),
             outerwearColor = softenHue(comp),
-            // Giày: Bắt chéo với màu ÁO TRONG (Dark Base). Quần xanh dương, giày màu Cam tối. (Kẹp bánh mì)
             shoesColor = darkenHue(base),
             accessoryColor = popHue(comp)
         )
     }
 
-    // ---------- 3. LIỀN KỀ (ANALOGOUS) ----------
+    // 3. LIỀN KỀ (ANALOGOUS)
     private fun analogous(base: Int, o: Outfit): Outfit {
         val left = rotateHue(base, -30f)
         val right = rotateHue(base, 30f)
 
         return o.copy(
             topColor = base,
-            bottomColor = darkenHue(left),   // Quần: Màu bên trái (VD: Quần Xanh lá)
+            bottomColor = darkenHue(left),
             outerwearColor = softenHue(right),
-            // Giày: Bắt chéo với màu ÁO KHOÁC (Màu bên phải). Giày Xanh dương tối.
             shoesColor = darkenHue(right),
             accessoryColor = popHue(right)
         )
     }
 
-    // ---------- 4. TAM GIÁC (TRIADIC) ----------
+    // 4. TAM GIÁC (TRIADIC)
     private fun triadic(base: Int, o: Outfit): Outfit {
         val c1 = rotateHue(base, 120f)
         val c2 = rotateHue(base, 240f)
 
         return o.copy(
             topColor = base,
-            bottomColor = darkenHue(c1),      // Quần: Màu góc 120 độ
+            bottomColor = darkenHue(c1),
             outerwearColor = softenHue(c2),
-            // Giày: Bắt chéo với màu ÁO KHOÁC (Màu góc 240 độ)
             shoesColor = darkenHue(c2),
             accessoryColor = popHue(c2)
         )
     }
 
     // =====================================================
-    // COLOR OPERATIONS
+    // Thuật toán
     // =====================================================
 
     private fun rotateHue(color: Int, degree: Float): Int {
@@ -90,7 +87,7 @@ object ColorHarmonyHelper {
         return android.graphics.Color.HSVToColor(hsv)
     }
 
-    /** QUẦN: Tối thẫm */
+    // QUẦN: Tối thẫm
     private fun darkenHue(color: Int): Int {
         val hsv = hsv(color)
         hsv[1] = hsv[1].coerceAtLeast(0.5f)
@@ -98,15 +95,15 @@ object ColorHarmonyHelper {
         return android.graphics.Color.HSVToColor(hsv)
     }
 
-    /** GIÀY ĐƠN SẮC: Tone màu tầm trung (Mid-tone), sáng hơn quần, tối hơn áo */
+    // GIÀY ĐƠN SẮC: Tone màu tầm trung (Mid-tone), sáng hơn quần, tối hơn áo
     private fun richHue(color: Int): Int {
         val hsv = hsv(color)
-        hsv[1] = hsv[1].coerceAtLeast(0.7f) // Giữ độ rực rỡ
-        hsv[2] = (hsv[2] * 0.6f).coerceIn(0.45f, 0.65f) // Sáng hơn quần (vốn là 0.2-0.4)
+        hsv[1] = hsv[1].coerceAtLeast(0.7f)
+        hsv[2] = (hsv[2] * 0.6f).coerceIn(0.45f, 0.65f)
         return android.graphics.Color.HSVToColor(hsv)
     }
 
-    /** ÁO KHOÁC: Phấn / Pastel */
+    // ÁO KHOÁC: Phấn / Pastel
     private fun softenHue(color: Int): Int {
         val hsv = hsv(color)
         hsv[1] = (hsv[1] * 0.5f).coerceIn(0.2f, 0.5f)
@@ -114,7 +111,7 @@ object ColorHarmonyHelper {
         return android.graphics.Color.HSVToColor(hsv)
     }
 
-    /** PHỤ KIỆN: Rực rỡ nhất */
+    // PHỤ KIỆN: Rực rỡ nhất
     private fun popHue(color: Int): Int {
         val hsv = hsv(color)
         hsv[1] = (hsv[1] * 1.3f).coerceIn(0.7f, 1.0f)

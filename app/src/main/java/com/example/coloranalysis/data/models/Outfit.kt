@@ -11,12 +11,11 @@ import androidx.room.PrimaryKey
     foreignKeys = [
         ForeignKey(
             entity = Profile::class,
-            parentColumns = ["id"],          // Trỏ đến cột 'id' của bảng 'profiles'
-            childColumns = ["profileId"],    // Liên kết với cột 'profileId' của bảng 'outfits'
-            onDelete = ForeignKey.CASCADE    // Quan trọng: Nếu xóa Profile, toàn bộ Outfit của Profile đó sẽ tự động bị xóa
+            parentColumns = ["id"],
+            childColumns = ["profileId"],
+            onDelete = ForeignKey.CASCADE
         )
     ],
-    // Tạo index cho khóa ngoại giúp truy vấn (lấy danh sách quần áo của 1 profile) nhanh hơn rất nhiều
     indices = [Index("profileId")]
 )
 data class Outfit(
@@ -24,20 +23,19 @@ data class Outfit(
     val id: Int = 0,
 
     @ColumnInfo(name = "profileId")
-    val profileId: Int,             // Khóa ngoại (Foreign Key)
+    val profileId: Int,
 
-    val outfitName: String,         // Tên bộ đồ (VD: "Đồ đi làm mùa đông", "Váy dạ hội")
+    val outfitName: String,
 
-    val displayOrder: Int = 0,      // Thứ tự hiển thị bộ đồ (0, 1, 2...)
+    val displayOrder: Int = 0,
 
     val mainColor: Int? = null,         // Màu chủ đạo
-    val colorScheme: String? = null,    // Cách phối: "Monochrome", "Complementary", "Analogous"...
+    val colorScheme: String? = null,    // Cách phối: "Monochrome", "Complementary", "Analogous", "Triadic"
 
-    // --- DỮ LIỆU MÀU SẮC BỘ QUẦN ÁO ---
-    // Lưu dưới dạng mã màu Int (giống như skinColor, hairColor của bạn)
-    val topColor: Int? = null,          // Màu áo / Áo liền quần
+    // Dữ liệu màu sắc bộ quần áo
+    val topColor: Int? = null,          // Màu áo
     val bottomColor: Int? = null,       // Màu quần / Chân váy
-    val outerwearColor: Int? = null,    // Màu áo khoác ngoài (nếu có)
+    val outerwearColor: Int? = null,    // Màu áo khoác ngoài
     val shoesColor: Int? = null,        // Màu giày
     val accessoryColor: Int? = null     // Màu phụ kiện (túi xách, khăn, mũ...)
 )

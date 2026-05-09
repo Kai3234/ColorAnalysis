@@ -92,7 +92,7 @@ fun WardrobeScreen(
     val outfits by db.getOutfitsForProfile(profile.id).collectAsState(initial = emptyList())
 
     var selectedOutfitToEdit by remember { mutableStateOf<Outfit?>(null) }
-    var selectedItemType by remember { mutableStateOf<String>("") } // "main", "top", "bottom", "outer", "shoes", "acc"
+    var selectedItemType by remember { mutableStateOf<String>("") } // "main" (màu chủ đạo), "top", "bottom", "outer", "shoes", "acc"
     var showColorPicker by remember { mutableStateOf(false) }
 
     var outfitToRename by remember { mutableStateOf<Outfit?>(null) }
@@ -106,7 +106,7 @@ fun WardrobeScreen(
 
         Button(
             onClick = {
-                // Thay vì tạo luôn, hiện hộp thoại hỏi người dùng chọn cách tạo
+                // Hiện hộp thoại chọn cách tạo
                 showAddOptionsDialog = true
             },
             modifier = Modifier.fillMaxWidth().height(50.dp),
@@ -126,12 +126,10 @@ fun WardrobeScreen(
                 pageCount = { outfits.size }
             )
 
-            // ✅ TỰ ĐỘNG DI CHUYỂN KHI THÊM TRANG PHỤC MỚI VÀ FIX CRASH KHI XÓA
             LaunchedEffect(outfits.size) {
                 if (outfits.isNotEmpty()) {
                     val lastIndex = outfits.lastIndex
 
-                    // Nếu số lượng trang phục tăng lên (người dùng vừa bấm Thêm), cuộn thẳng tới bộ mới tạo ở cuối
                     if (pagerState.currentPage != lastIndex) {
                         pagerState.animateScrollToPage(lastIndex)
                     }
@@ -143,7 +141,7 @@ fun WardrobeScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                // ===== OUTFIT PAGE =====
+                // Trang trang phục
                 HorizontalPager(
                     state = pagerState,
                     userScrollEnabled = false,
@@ -182,13 +180,14 @@ fun WardrobeScreen(
 
                 Spacer(Modifier.height(8.dp))
 
+
+                // Di chuyển giữa các trang
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
 
-                    // PREVIOUS
                     IconButton(
                         onClick = {
                             scope.launch {
@@ -216,7 +215,6 @@ fun WardrobeScreen(
 
                     Spacer(Modifier.width(8.dp))
 
-                    // NEXT
                     IconButton(
                         onClick = {
                             scope.launch {
@@ -257,7 +255,6 @@ fun WardrobeScreen(
                         else -> selectedOutfitToEdit!!
                     }
 
-                    // Nếu người dùng vừa chọn "Màu chủ đạo" mà đã có "Cách phối" từ trước -> Tự chạy lại autofill
                     if (selectedItemType == "main" && updatedOutfit.colorScheme != null) {
                         updatedOutfit = ColorHarmonyHelper.autoFillOutfit(updatedOutfit)
                     }
@@ -270,6 +267,8 @@ fun WardrobeScreen(
         )
     }
 
+
+    // Đổi tên trang phục
     var newName by remember { mutableStateOf("") }
 
     val renameTarget = outfitToRename
@@ -318,7 +317,7 @@ fun WardrobeScreen(
         )
     }
 
-
+    // Xóa trang phục
     val deleteTarget = outfitToDelete
 
     deleteTarget?.let { outfit ->
@@ -355,9 +354,7 @@ fun WardrobeScreen(
         )
     }
 
-    // ==========================================
-    // 1. DIALOG CHỌN PHƯƠNG THỨC TẠO TRANG PHỤC
-    // ==========================================
+    // 1. Dialog chọn cách tạo trang phục
     if (showAddOptionsDialog) {
         AlertDialog(
             onDismissRequest = { showAddOptionsDialog = false },
@@ -367,7 +364,7 @@ fun WardrobeScreen(
                 Button(
                     onClick = {
                         showAddOptionsDialog = false
-                        showQuizDialog = true // Mở trắc nghiệm
+                        showQuizDialog = true
                     }
                 ) {
                     Text("Gợi ý tự động")
@@ -377,7 +374,7 @@ fun WardrobeScreen(
                 OutlinedButton(
                     onClick = {
                         showAddOptionsDialog = false
-                        // TẠO THỦ CÔNG
+                        // Tạo thủ công
                         scope.launch(Dispatchers.IO) {
                             val newOutfit = Outfit(
                                 profileId = profile.id,
@@ -394,9 +391,7 @@ fun WardrobeScreen(
         )
     }
 
-    // ==========================================
-    // 2. DIALOG TRẮC NGHIỆM (QUIZ)
-    // ==========================================
+    // 2. Dialog trắc nghiệm
     if (showQuizDialog) {
         OutfitQuizDialog(
             seasonName = profile.seasonType,
@@ -404,7 +399,7 @@ fun WardrobeScreen(
             onQuizComplete = { selectedColor, selectedScheme, q1, q2, q3 ->
                 showQuizDialog = false
 
-                // Rút gọn text trả lời để ghép tên cho hay (Vì text đầy đủ khá dài)
+                // Rút gọn text trả lời để ghép tên
                 val shortPurpose = q1.split(" / ").firstOrNull() ?: "Trang phục" // VD: "Đi làm"
                 val shortVibe = q2.split(",").firstOrNull() ?: ""          // VD: "Quyền lực"
                 val shortStyle = q3.split(",").firstOrNull() ?: ""        // VD: "Văn phòng hiện đại"
@@ -421,13 +416,9 @@ fun WardrobeScreen(
                         colorScheme = selectedScheme
                     )
 
-                    // Điền full màu cho các món
                     val autoFilledOutfit = ColorHarmonyHelper.autoFillOutfit(newOutfit)
 
-                    // Lưu vào DB
                     db.insertOutfit(autoFilledOutfit)
-
-                    // KHÔNG CẦN VIẾT CODE CUỘN Ở ĐÂY (Vì LaunchedEffect bên dưới sẽ tự lo)
                 }
             }
         )
@@ -502,7 +493,7 @@ fun OutfitCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // -- HÀNG 1: CHỌN MÀU CHỦ ĐẠO --
+            // Hàng 1: Chọn màu chủ đạo
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Màu chủ đạo:", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                 Spacer(modifier = Modifier.width(8.dp))
@@ -523,7 +514,7 @@ fun OutfitCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // -- HÀNG 2: CHỌN CÁCH PHỐI ĐỒ (Chỉ hiện khi đã có màu chủ đạo) --
+            // Hàng 2: Chọn cách phối đồ (Chỉ hiện khi đã có màu chủ đạo)
             if (outfit.mainColor != null) {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(ColorHarmonyHelper.SCHEMES) { scheme ->
@@ -537,13 +528,13 @@ fun OutfitCard(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // -- HÀNG 3: CÁC MÓN QUẦN ÁO (Vẫn cho phép bấm chọn thủ công) --
+            // Hàng 3: các món quần áo
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                // ===== HAT =====
+                // Mũ
                 ClothingRow(
                     label = "Mũ / Phụ kiện",
                     icon = R.drawable.hat,
@@ -555,7 +546,7 @@ fun OutfitCard(
 
                 Spacer(Modifier.height(12.dp))
 
-                // ===== SHIRT =====
+                // Áo
                 ClothingRow(
                     label = "Áo",
                     icon = R.drawable.shirt,
@@ -567,7 +558,7 @@ fun OutfitCard(
 
                 Spacer(Modifier.height(8.dp))
 
-                // ===== JACKET (DỄ BẤM RIÊNG) =====
+                // Áo khoác
                 ClothingRow(
                     label = "Áo khoác",
                     icon = R.drawable.jacket,
@@ -579,7 +570,7 @@ fun OutfitCard(
 
                 Spacer(Modifier.height(12.dp))
 
-                // ===== BOTTOM =====
+                // Quần
                 ClothingRow(
                     label = "Quần / Váy",
                     icon = R.drawable.pants,
@@ -591,7 +582,7 @@ fun OutfitCard(
 
                 Spacer(Modifier.height(12.dp))
 
-                // ===== SHOES =====
+                // Giày
                 ClothingRow(
                     label = "Giày",
                     icon = R.drawable.shoes,
@@ -639,7 +630,6 @@ fun ClothingRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        // ===== ICON CENTER =====
         Box(
             modifier = Modifier.weight(1f),
             contentAlignment = Alignment.Center
@@ -653,7 +643,6 @@ fun ClothingRow(
 
         }
 
-        // ===== CLICKABLE TEXT =====
         Surface(
             modifier = Modifier
                 .weight(1f)
@@ -692,19 +681,17 @@ fun ClothingSvg(
     modifier: Modifier = Modifier,
     onPreview: ((Int) -> Unit)? = null
 ) {
-    // Tính màu nền dựa trên màu của icon (nếu có)
+    // Tính màu nền dựa trên màu của icon
     val backgroundColor = remember(color) {
         if (color == null) {
-            // Nền xám nhạt CỐ ĐỊNH (Không dùng alpha)
             Color(0xFFEEEEEE)
         } else {
             val iconColor = Color(color)
 
-            // Nếu icon sáng -> nền xám đen đậm. Nếu icon tối -> nền xám trắng
             if (iconColor.luminance() > 0.5) {
-                Color(0xFF333333) // Đen xám tuyệt đối
+                Color(0xFF333333)
             } else {
-                Color(0xFFF5F5F5) // Trắng xám tuyệt đối
+                Color(0xFFF5F5F5)
             }
         }
     }
@@ -719,11 +706,10 @@ fun ClothingSvg(
             },
         contentAlignment = Alignment.Center
     ) {
-        // Nền hình tròn phía sau Icon
         Box(
             modifier = Modifier
-                .size(80.dp)               // kích thước nền (có thể điều chỉnh)
-                .clip(CircleShape)         // bo tròn hoàn toàn
+                .size(80.dp)
+                .clip(CircleShape)
                 .background(backgroundColor)
                 .border(
                     1.dp,
@@ -732,7 +718,6 @@ fun ClothingSvg(
                 )
         )
 
-        // Icon chính
         Icon(
             painter = painterResource(icon),
             contentDescription = null,
@@ -758,7 +743,6 @@ fun ColorPickerDialog(
 
             Column {
 
-                // ===== TAB =====
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
@@ -772,7 +756,6 @@ fun ColorPickerDialog(
 
                 Spacer(Modifier.height(12.dp))
 
-                // ===== PALETTE =====
                 if (selectedTab == 0) {
 
                     LazyVerticalGrid(
@@ -801,7 +784,6 @@ fun ColorPickerDialog(
 
                 } else {
 
-                    // ===== CUSTOM PICKER =====
                     CustomColorPicker(
                         onColorSelected = { color ->
                             tempColor = color
@@ -811,7 +793,7 @@ fun ColorPickerDialog(
 
                 Spacer(Modifier.height(12.dp))
 
-                // ===== PREVIEW =====
+                // Hiển thị màu được chọn
                 tempColor?.let {
                     Box(
                         modifier = Modifier
@@ -824,7 +806,6 @@ fun ColorPickerDialog(
             }
         },
 
-        // ===== ACTIONS =====
         confirmButton = {
             TextButton(
                 onClick = {
@@ -859,7 +840,6 @@ fun CustomColorPicker(
 
     Column {
 
-        // ===== PREVIEW =====
         Box(
             modifier = Modifier
                 .size(90.dp)
@@ -870,9 +850,7 @@ fun CustomColorPicker(
 
         Spacer(Modifier.height(16.dp))
 
-        // ================= HUE =================
         Text("Hue (0 - 360)")
-
         Row(verticalAlignment = Alignment.CenterVertically) {
 
             Slider(
@@ -897,9 +875,7 @@ fun CustomColorPicker(
             )
         }
 
-        // ================= SAT =================
         Text("Saturation (0 - 100%)")
-
         Row(verticalAlignment = Alignment.CenterVertically) {
 
             Slider(
@@ -924,9 +900,7 @@ fun CustomColorPicker(
             )
         }
 
-        // ================= VALUE =================
         Text("Brightness (0 - 100%)")
-
         Row(verticalAlignment = Alignment.CenterVertically) {
 
             Slider(
@@ -1131,9 +1105,7 @@ fun QuizOptionButton(text: String, onClick: () -> Unit) {
     }
 }
 
-// ==========================================
-// THUẬT TOÁN CHẤM ĐIỂM (CẢI TIẾN 3 YẾU TỐ)
-// ==========================================
+// Thuật toán chấm điểm
 private fun calculateBestColor(
     allColors: List<ColorPaletteItem>,
     bonusTag: String,
@@ -1151,7 +1123,6 @@ private fun calculateBestColor(
         if (color.lifestyle.contains(targetLife)) score += 3
 
         // Trọng số phụ (Hoàn cảnh từ Câu 1)
-        // Kiểm tra xem bonusTag có nằm trong personality HOẶC lifestyle của màu này không
         if (color.personality.contains(bonusTag) || color.lifestyle.contains(bonusTag)) {
             score += 2
         }
@@ -1162,13 +1133,12 @@ private fun calculateBestColor(
     // 2. Tìm mức điểm cao nhất
     val maxScore = scoredColors.maxOfOrNull { it.second } ?: 0
 
-    // 3. Lấy TẤT CẢ các màu đạt đỉnh
+    // 3. Lấy các màu có điểm cao nhất
     val topColors = scoredColors.filter { it.second == maxScore }.map { it.first }
 
-    // 4. Chọn ngẫu nhiên 1 màu (Giúp mỗi lần làm Quiz có thể ra 1 tone màu khác biệt trong cùng nhóm)
+    // 4. Chọn ngẫu nhiên 1 màu cao nhất
     val bestColor = topColors.randomOrNull() ?: allColors.first()
 
-    // 5. Convert sang Int
     return try {
         val hexString = bestColor.hex
         val safeHex = if (hexString.startsWith("#")) hexString else "#$hexString"

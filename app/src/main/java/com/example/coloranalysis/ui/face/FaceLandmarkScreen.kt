@@ -93,18 +93,13 @@ fun FaceLandmarkScreen(
 
     val scrollState = rememberScrollState()
 
-    // Kiểm tra xem màn hình có thể cuộn xuống nữa không
     val showScrollDownIcon by remember {
         derivedStateOf { scrollState.canScrollForward }
     }
 
-    // Display States
     var maskedBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var hairBitmap by remember { mutableStateOf<Bitmap?>(null) }
 
-
-
-    // Colors
     var hairColor by remember { mutableStateOf<Int?>(null) }
     var skinColor by remember { mutableStateOf<Int?>(null) }
     var eyeColor by remember { mutableStateOf<Int?>(null) }
@@ -125,7 +120,7 @@ fun FaceLandmarkScreen(
                 val loadedBitmap = loadBitmapFromUri(context, Uri.parse(uriString))
                 val original = downscaleBitmap(loadedBitmap, 1024)
 
-                // 1. HAIR SEGMENTATION
+                // 1. Tách tóc
                 val optionsSegment = ImageSegmenterOptions.builder()
                     .setBaseOptions(BaseOptions.builder().setModelAssetPath("models/selfie_multiclass_256x256.tflite").build())
                     .setRunningMode(RunningMode.IMAGE)
@@ -142,26 +137,22 @@ fun FaceLandmarkScreen(
                     val mask = resultSegment.categoryMask().get()
                     val buffer = ByteBufferExtractor.extract(mask)
 
-                    // Tạo ảnh preview có phủ màu tóc
                     baseMaskedBitmap = applyHairMaskOnly(original, buffer)
 
-                    // Bước A: Cắt vùng tóc (Category 1)
                     val localCroppedHair = extractAndCropRegion(original, buffer, 1)
 
-                    // Bước B: Tính màu tóc trung bình từ vùng đã cắt (Bỏ qua pixel trong suốt)
                     var hColor: Int? = null
                     if (localCroppedHair != null) {
                         hColor = getAverageColor(localCroppedHair)
                     }
 
-                    // Bước C: Cập nhật UI trên Main Thread một lần duy nhất
                     withContext(Dispatchers.Main) {
                         hairBitmap = localCroppedHair
                         hairColor = hColor
                     }
                 }
 
-                // 2. FACE LANDMARKER
+                // 2. Tách da, mắt, môi
                 val optionsLandmark = FaceLandmarkerOptions.builder()
                     .setBaseOptions(BaseOptions.builder().setModelAssetPath("models/face_landmarker.task").build())
                     .setRunningMode(RunningMode.IMAGE)
@@ -173,20 +164,15 @@ fun FaceLandmarkScreen(
                 if (landmarkResult.faceLandmarks().isNotEmpty()) {
                     val landmarks = landmarkResult.faceLandmarks()[0]
 
-                    // Define Indices
                     val skinIndices = intArrayOf(10, 67, 103, 109, 67)
                     val eyeIndices = intArrayOf(468, 473) // Tâm Iris (Tròng đen) trái và phải
                     val lipIndices = intArrayOf(85, 86, 315, 316)
 
 
-                    // A: Calculate Average Colors
-                    // Da và Môi để mặc định isEyeRegion = false (Dùng ConvexHull)
                     val sColor = getAverageColorFromLandmarks(original, landmarks, skinIndices, FaceRegion.SKIN)
                     val eColor = getAverageColorFromLandmarks(original, landmarks, eyeIndices, FaceRegion.EYE)
                     val lColor = getAverageColorFromLandmarks(original, landmarks, lipIndices, FaceRegion.LIP)
-                    // 1. Save the final masked preview to a file (Internal Storage)
 
-                    // 2. SAVE TO DATABASE
                     db.updateColorResults(
                         id = profileId,
                         skin = sColor,
@@ -195,7 +181,6 @@ fun FaceLandmarkScreen(
                         lip = lColor
                     )
 
-                    // C: Draw Pinpoints on the Preview
                     val finalOverlay = drawPinpointsOnBitmap(
                         baseMaskedBitmap ?: original,
                         landmarks,
@@ -225,15 +210,14 @@ fun FaceLandmarkScreen(
     }
 
     Scaffold(
-        // Scaffold sẽ tự chọn màu nền (trắng/đen) dựa trên Theme của máy
         topBar = {
             CenterAlignedTopAppBar(title = { Text("Phân tích đặc điểm") })
         },
         bottomBar = {
             Surface(
                 modifier = Modifier.navigationBarsPadding(),
-                color = MaterialTheme.colorScheme.background, // Giữ màu nền tệp với app
-                tonalElevation = 4.dp // Tạo viền mờ tách biệt với nội dung cuộn
+                color = MaterialTheme.colorScheme.background,
+                tonalElevation = 4.dp
             ) {
                 Box(
                     modifier = Modifier
@@ -269,7 +253,6 @@ fun FaceLandmarkScreen(
                 .padding(innerPadding)
         ) {
 
-            // 1. NỘI DUNG CUỘN (COLUMN)
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -292,7 +275,7 @@ fun FaceLandmarkScreen(
                         CircularProgressIndicator(modifier = Modifier.size(60.dp))
                     }
                 } else {
-                    // MAIN IMAGE PREVIEW
+                    // Ảnh phân tích
                     maskedBitmap?.let {
                         Card(
                             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
@@ -313,7 +296,7 @@ fun FaceLandmarkScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // CARD KẾT QUẢ CHI TIẾT
+                    // Kết quả chi tiết
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
@@ -369,17 +352,14 @@ fun FaceLandmarkScreen(
                         }
                     }
 
-                    // Khoảng trống dưới cùng để cuộn lên được thoải mái
                     Spacer(modifier = Modifier.height(60.dp))
                 }
             }
 
-            // 2. ICON CUỘN XUỐNG
-            // Do nằm chung trong "BOX TỔNG" nên nó tự động bị đẩy lên trên BottomBar
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = 16.dp), // Đẩy icon lên cách mép BottomBar 16dp
+                    .padding(bottom = 16.dp),
                 contentAlignment = Alignment.BottomCenter
             ) {
                 androidx.compose.animation.AnimatedVisibility(
@@ -417,10 +397,6 @@ fun ColorChip(label: String, colorInt: Int) {
 }
 
 
-
-/**
- * Only tints the hair region (category 1) for visual feedback
- */
 private fun applyHairMaskOnly(original: Bitmap, buffer: java.nio.ByteBuffer): Bitmap {
     val width = original.width
     val height = original.height
@@ -430,9 +406,8 @@ private fun applyHairMaskOnly(original: Bitmap, buffer: java.nio.ByteBuffer): Bi
     buffer.rewind()
     for (i in pixels.indices) {
         val category = buffer.get().toInt()
-        if (category == 1) { // HAIR
+        if (category == 1) { // Tóc
             val p = pixels[i]
-            // Blend 40% Magenta overlay
             pixels[i] = Color.rgb(
                 (Color.red(p) * 0.6f + 255 * 0.4f).toInt(),
                 (Color.green(p) * 0.6f + 0 * 0.4f).toInt(),
@@ -445,9 +420,6 @@ private fun applyHairMaskOnly(original: Bitmap, buffer: java.nio.ByteBuffer): Bi
     return result
 }
 
-/**
- * Draws small colored circles on the bitmap where landmarks were sampled
- */
 private fun drawPinpointsOnBitmap(
     base: Bitmap,
     landmarks: List<com.google.mediapipe.tasks.components.containers.NormalizedLandmark>,
@@ -462,7 +434,7 @@ private fun drawPinpointsOnBitmap(
         isAntiAlias = true
     }
 
-    // Draw Skin points (Yellow)
+    // Điểm da (vàng)
     paint.color = Color.YELLOW
     skinIdx.forEach { idx ->
         val x = landmarks[idx].x() * result.width
@@ -470,7 +442,7 @@ private fun drawPinpointsOnBitmap(
         canvas.drawCircle(x, y, 6f, paint)
     }
 
-    // Draw Eye points (Cyan/Blue)
+    // Điểm mắt (xanh dương)
     paint.color = Color.CYAN
     eyeIdx.forEach { idx ->
         val x = landmarks[idx].x() * result.width
@@ -478,7 +450,7 @@ private fun drawPinpointsOnBitmap(
         canvas.drawCircle(x, y, 6f, paint)
     }
 
-    // Draw Lip points (Red/Pink)
+    // Điểm môi (đỏ)
     paint.color = Color.RED
     lipIdx.forEach { idx ->
         val x = landmarks[idx].x() * result.width
@@ -495,8 +467,6 @@ private fun downscaleBitmap(bitmap: Bitmap, maxSize: Int): Bitmap {
     val height = if (ratio > 1) (maxSize / ratio).toInt() else maxSize
     return Bitmap.createScaledBitmap(bitmap, width, height, true)
 }
-
-
 
 private fun extractAndCropRegion(original: Bitmap, buffer: java.nio.ByteBuffer, targetCategory: Int): Bitmap? {
     val width = original.width
@@ -518,36 +488,30 @@ private fun extractAndCropRegion(original: Bitmap, buffer: java.nio.ByteBuffer, 
             val index = y * width + x
 
             if (category == targetCategory) {
-                // Keep the original pixel color
                 pixels[index] = originalPixels[index]
 
-                // Update Bounding Box boundaries
                 if (x < minX) minX = x
                 if (x > maxX) maxX = x
                 if (y < minY) minY = y
                 if (y > maxY) maxY = y
                 found = true
             } else {
-                // Make non-target pixels transparent
-                pixels[index] = android.graphics.Color.TRANSPARENT
+                pixels[index] = Color.TRANSPARENT
             }
         }
     }
 
     if (!found) return null
 
-    // Create a temporary full-size bitmap with the transparent background
     val fullBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
     fullBitmap.setPixels(pixels, 0, width, 0, 0, width, height)
 
-    // Add a small padding (10 pixels) to the crop so it's not too tight
     val padding = 10
     val cropX = (minX - padding).coerceAtLeast(0)
     val cropY = (minY - padding).coerceAtLeast(0)
     val cropW = (maxX + padding).coerceAtMost(width) - cropX
     val cropH = (maxY + padding).coerceAtMost(height) - cropY
 
-    // Return the cropped region
     return Bitmap.createBitmap(fullBitmap, cropX, cropY, cropW, cropH)
 }
 
@@ -556,7 +520,6 @@ private fun getAverageColor(bitmap: Bitmap): Int {
     val src = Mat()
     Utils.bitmapToMat(bitmap, src)
 
-    // Convert sang LAB (ổn định ánh sáng hơn RGB)
     val lab = Mat()
     Imgproc.cvtColor(src, lab, Imgproc.COLOR_RGB2Lab)
 
@@ -601,7 +564,6 @@ private fun getAverageColorFromLandmarks(
     val src = Mat()
     Utils.bitmapToMat(bitmap, src)
 
-    // Mask đen (0)
     val mask = Mat.zeros(src.size(), CvType.CV_8UC1)
     val points = mutableListOf<Point>()
 
@@ -621,7 +583,7 @@ private fun getAverageColorFromLandmarks(
 
     when (regionType) {
         FaceRegion.EYE -> {
-            // MẮT: Vẽ vòng tròn rất nhỏ (bán kính ~ 1.5%) tại tâm 2 tròng đen
+            // Mắt: Vẽ vòng tròn rất nhỏ (bán kính ~ 1.5%) tại tâm 2 tròng đen
             val radius = (bitmap.width * 0.015).toInt().coerceAtLeast(2)
             for (pt in points) {
                 Imgproc.circle(mask, pt, radius, Scalar(255.0), -1)
@@ -629,7 +591,7 @@ private fun getAverageColorFromLandmarks(
         }
 
         FaceRegion.SKIN -> {
-            // DA: Vẽ các mảng hình tròn (bán kính ~ 4-5%)
+            // Da: Vẽ các mảng hình tròn (bán kính ~ 4-5%)
             // Bán kính lớn hơn để lấy trung bình được nhiều lỗ chân lông/vùng da hơn, giảm nhiễu cục bộ.
             val radius = (bitmap.width * 0.04).toInt().coerceAtLeast(5)
             for (pt in points) {

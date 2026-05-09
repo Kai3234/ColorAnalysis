@@ -12,11 +12,11 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ProfileDao {
 
-    // Insert new profile
+    // Insert
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProfile(profile: Profile): Long
 
-    // Get all profiles sorted by newest first
+    // Lấy profiles theo mới nhất trước
     @Query("SELECT * FROM profiles ORDER BY dateCreated DESC")
     fun getAllProfiles(): Flow<List<Profile>>
 

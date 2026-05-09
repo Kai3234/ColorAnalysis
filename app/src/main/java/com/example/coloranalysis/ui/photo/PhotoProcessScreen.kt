@@ -184,36 +184,27 @@ fun PhotoProcessScreen(
     }
 }
 
-/**
- * Pure OpenCV Whitening Logic
- */
+
 fun applyOpenCVWhitening(bitmap: Bitmap): Bitmap {
     val src = Mat()
     Utils.bitmapToMat(bitmap, src)
 
-    // 1. Convert to LAB color space
     val labImage = Mat()
     Imgproc.cvtColor(src, labImage, Imgproc.COLOR_RGB2Lab)
 
-    // 2. Split channels (L, A, B)
     val channels = mutableListOf<Mat>()
     Core.split(labImage, channels)
 
-    // 3. Brighten only the L channel (Lightness)
-    // Adding 15-20 is usually enough for a clean look
     Core.add(channels[0], org.opencv.core.Scalar(15.0), channels[0])
 
-    // 4. Merge channels back
     Core.merge(channels, labImage)
 
-    // 5. Convert back to RGB
     val resultMat = Mat()
     Imgproc.cvtColor(labImage, resultMat, Imgproc.COLOR_Lab2RGB)
 
     val resultBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
     Utils.matToBitmap(resultMat, resultBitmap)
 
-    // Cleanup
     src.release()
     labImage.release()
     channels.forEach { it.release() }
@@ -222,9 +213,6 @@ fun applyOpenCVWhitening(bitmap: Bitmap): Bitmap {
     return resultBitmap
 }
 
-/**
- * Robust loading from Content URIs (Fixes "Image didn't load" issue)
- */
 fun loadBitmapFromUri(context: Context, uri: Uri): Bitmap {
     return context.contentResolver.openInputStream(uri)?.use { stream ->
         val options = BitmapFactory.Options().apply {

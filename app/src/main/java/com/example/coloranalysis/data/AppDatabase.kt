@@ -14,7 +14,7 @@ import com.example.coloranalysis.data.models.Profile
 @Database(entities = [Profile::class,
     Outfit::class],
     version = 1)
-@TypeConverters(Converters::class) // <--- THÊM DÒNG NÀY Ở ĐÂY
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun profileDao(): ProfileDao
 

@@ -75,7 +75,7 @@ fun SeasonPaletteDisplay(
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        // --- PHẦN LỌC ---
+        // Phần lọc
         Text("Tùy chỉnh theo cá nhân", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
         Text("Tính cách:", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 8.dp))
@@ -110,7 +110,7 @@ fun SeasonPaletteDisplay(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- HIỂN THỊ MÀU ---
+        // Hiển thị màu phù hợp
         Text(
             text = "Bảng màu phù hợp (${filteredColors.size})",
             style = MaterialTheme.typography.titleSmall,
@@ -124,7 +124,6 @@ fun SeasonPaletteDisplay(
             horizontalArrangement = Arrangement.Center
         ) {
             filteredColors.forEach { colorItem ->
-                // Fix an toàn mã Hex (tránh crash nếu thiếu dấu #)
                 val safeHex = if (colorItem.hex.startsWith("#")) colorItem.hex else "#${colorItem.hex}"
                 val parsedColorInt = try { android.graphics.Color.parseColor(safeHex) } catch (e: Exception) { android.graphics.Color.GRAY }
 
@@ -151,7 +150,7 @@ fun SeasonPaletteDisplay(
             }
         }
 
-        // --- THÊM MỚI: HIỂN THỊ MÀU NÊN TRÁNH ---
+        // Hiển thị màu nên tránh
         if (avoidColors.isNotEmpty()) {
             Spacer(modifier = Modifier.height(24.dp))
             HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
@@ -160,7 +159,7 @@ fun SeasonPaletteDisplay(
             Text(
                 text = "Màu nên tránh (${avoidColors.size})",
                 style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.error // Dùng màu đỏ để cảnh báo
+                color = MaterialTheme.colorScheme.error
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -170,7 +169,6 @@ fun SeasonPaletteDisplay(
                 horizontalArrangement = Arrangement.Center
             ) {
                 avoidColors.forEach { avoidItem ->
-                    // Fix an toàn mã Hex
                     val safeHex = if (avoidItem.hex.startsWith("#")) avoidItem.hex else "#${avoidItem.hex}"
                     val parsedColorInt = try { android.graphics.Color.parseColor(safeHex) } catch (e: Exception) { android.graphics.Color.GRAY }
 
@@ -183,7 +181,6 @@ fun SeasonPaletteDisplay(
                                 .size(70.dp)
                                 .background(Color(parsedColorInt), RoundedCornerShape(12.dp))
                                 .border(1.dp, Color.LightGray.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-                                // Bấm vào vẫn bật xem fullscreen được bình thường
                                 .clickable { onColorClick(parsedColorInt) }
                         )
                         Text(
