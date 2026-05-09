@@ -56,23 +56,20 @@ import java.io.FileOutputStream
 fun PhotoProcessScreen(
     profileId: Int,
     navigateToFaceLandmark: () -> Unit,
-    navigateToResult: () -> Unit // Add this if needed
+    navigateToResult: () -> Unit
 ) {
     val context = LocalContext.current
     val db = remember { AppDatabase.getDatabase(context).profileDao() }
 
-    // State management
     var originalBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var processedBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var isProcessing by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
 
-
     LaunchedEffect(profileId) {
         withContext(Dispatchers.IO) {
             try {
-                // 1. Fetch Profile from Database
                 val profile = db.getProfileById(profileId)
                 val uriString = profile?.imgOriginalUri
 
@@ -81,18 +78,14 @@ fun PhotoProcessScreen(
                     return@withContext
                 }
 
-                // 2. Load the Bitmap (Fixed URI Loading)
                 val original = loadBitmapFromUri(context, Uri.parse(uriString))
                 originalBitmap = original
 
-                // 3. Apply OpenCV Whitening
                 val processed = applyOpenCVWhitening(original)
                 processedBitmap = processed
 
-                // 4. Save the Whitened Image
                 val savedUri = saveBitmap(context, processed, "whitened")
 
-                // 5. Update Database
                 db.updateImgProcessed(profileId, savedUri)
 
             } catch (e: Exception) {
@@ -112,8 +105,8 @@ fun PhotoProcessScreen(
         bottomBar = {
             Surface(
                 modifier = Modifier.navigationBarsPadding(),
-                color = MaterialTheme.colorScheme.background, // Giữ màu nền tệp với app
-                tonalElevation = 4.dp // Tạo đổ bóng nhẹ để tách biệt với nội dung cuộn
+                color = MaterialTheme.colorScheme.background,
+                tonalElevation = 4.dp
             ) {
                 Box(
                     modifier = Modifier
@@ -150,7 +143,6 @@ fun PhotoProcessScreen(
             } else if (errorMessage != null) {
                 Text(errorMessage!!, color = MaterialTheme.colorScheme.error)
             } else {
-                // Display Original
                 Text("Ảnh gốc", fontWeight = FontWeight.SemiBold)
                 originalBitmap?.let {
                     Image(
@@ -165,7 +157,6 @@ fun PhotoProcessScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Display Processed
                 Text("Ảnh sau khi xử lý", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
                 processedBitmap?.let {
                     Image(
@@ -222,9 +213,6 @@ fun loadBitmapFromUri(context: Context, uri: Uri): Bitmap {
     } ?: throw Exception("Không thể mở tệp ảnh")
 }
 
-/**
- * Saves processed bitmap to Internal storage
- */
 fun saveBitmap(context: Context, bitmap: Bitmap, prefix: String): String {
     val fileName = "${prefix}_${System.currentTimeMillis()}.jpg"
     val file = File(context.filesDir, fileName)

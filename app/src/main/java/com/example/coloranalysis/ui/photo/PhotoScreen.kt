@@ -107,7 +107,7 @@ fun PhotoScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // --- KHUNG HƯỚNG DẪN ---
+            // Khung hướng dẫn
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -161,7 +161,7 @@ fun PhotoScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // --- 2. CÁC NÚT CHỨC NĂNG ---
+            // 2. Các nút chức năng
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)

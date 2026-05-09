@@ -600,7 +600,7 @@ private fun getAverageColorFromLandmarks(
         }
 
         FaceRegion.LIP -> {
-            // MÔI: Do môi có hình dáng dài mảnh, ta vẫn dùng ConvexHull để bao quanh khối
+            // Môi: Dùng ConvexHull để bao quanh khối
             val matOfPoint = MatOfPoint(*points.toTypedArray())
             val hull = MatOfInt()
             Imgproc.convexHull(matOfPoint, hull)

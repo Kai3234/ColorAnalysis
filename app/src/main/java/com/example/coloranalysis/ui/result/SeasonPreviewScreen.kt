@@ -47,10 +47,8 @@ import com.example.coloranalysis.ui.components.SeasonPaletteDisplay
 fun SeasonPreviewScreen(
     onBack: () -> Unit
 ) {
-    // Trạng thái chọn mùa (Mặc định chọn mùa đầu tiên)
     var selectedSeason by remember { mutableStateOf(PaletteHelper.allSubSeasons[0]) }
 
-    // Trạng thái mở/đóng menu chọn mùa
     var expanded by remember { mutableStateOf(false) }
 
     var previewColor by remember { mutableStateOf<Int?>(null) }
@@ -83,7 +81,7 @@ fun SeasonPreviewScreen(
             ) {
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // --- BỘ CHỌN MÙA (DROPDOWN MENU) ---
+                // Bộ chọn mùa (Dropdown menu)
                 Text(
                     text = "Chọn phân nhóm mùa:",
                     style = MaterialTheme.typography.titleSmall,
@@ -131,15 +129,13 @@ fun SeasonPreviewScreen(
                 HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // --- HIỂN THỊ BẢNG MÀU VÀ BỘ LỌC ---
-                // Key(selectedSeason) giúp reset lại các filter bên trong khi đổi mùa
+                // Hiển thị bảng màu và bộ lọc
                 key(selectedSeason) {
                     SeasonPaletteDisplay(
                         seasonName = selectedSeason,
                         initialPersonalities = emptyList(),
                         initialLifestyles = emptyList(),
                         onFilterChanged = { _, _ ->
-                            // Không cần làm gì vì không yêu cầu lưu trạng thái lọc
                         },
                         onColorClick = { color ->
                             previewColor = color
@@ -166,7 +162,7 @@ fun SeasonPreviewScreen(
                     ) {
                         previewColor = null
                     }
-                    .zIndex(10f) // đảm bảo nổi trên cùng
+                    .zIndex(10f)
             )
         }
     }

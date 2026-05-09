@@ -91,16 +91,12 @@ fun ResultScreen(
 
     var processedBitmap by remember { mutableStateOf<Bitmap?>(null) }
 
-
-    // Thêm state này ở đầu hàm ResultScreen (cùng chỗ với các state khác)
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabTitles = listOf("Bảng màu", "Tủ đồ", "Thông số")
 
-    // Khai báo riêng ScrollState cho từng tab để khi chuyển tab không bị nhảy vị trí cuộn
     val tab1ScrollState = rememberScrollState()
     val tab3ScrollState = rememberScrollState()
 
-    // Update lại logic hiện icon cuộn xuống tùy theo tab đang mở
     val showScrollDownIcon by remember {
         derivedStateOf {
             when (selectedTabIndex) {
@@ -146,8 +142,8 @@ fun ResultScreen(
         bottomBar = {
             Surface(
                 modifier = Modifier.navigationBarsPadding(),
-                color = MaterialTheme.colorScheme.background, // Giữ màu nền tệp với app
-                tonalElevation = 4.dp // Tạo đổ bóng nhẹ để tách biệt với nội dung cuộn
+                color = MaterialTheme.colorScheme.background,
+                tonalElevation = 4.dp
             ) {
                 Box(
                     modifier = Modifier
@@ -176,9 +172,9 @@ fun ResultScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding) // Padding của Scaffold
+                        .padding(padding)
                 ) {
-                    // --- 1. THANH TAB HEADER ---
+                    // 1. Tab Header
                     TabRow(selectedTabIndex = selectedTabIndex) {
                         tabTitles.forEachIndexed { index, title ->
                             Tab(
@@ -194,13 +190,13 @@ fun ResultScreen(
                         }
                     }
 
-                    // --- 2. NỘI DUNG TỪNG TAB ---
+                    // 2. Nội dung từng tab
                     Box(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         when (selectedTabIndex) {
 
-                            // TAB 1: BẢNG MÀU MÙA
+                            // Tab 1: Bảng màu
                             0 -> {
                                 Column(
                                     modifier = Modifier
@@ -246,26 +242,22 @@ fun ResultScreen(
                                 }
                             }
 
-                            // TAB 2: TỦ ĐỒ
+                            // Tab 2: Tủ đồ
                             1 -> {
                                 val context = LocalContext.current
 
-                                // Thêm p.personalityType và p.lifestyleType vào remember key
-                                // để khi DB thay đổi, danh sách màu tự động cập nhật
                                 val paletteColors: List<Int> = remember(p.seasonType, p.personalityType, p.lifestyleType) {
                                     val fileName = PaletteHelper.getFileName(p.seasonType)
 
                                     if (fileName != null) {
                                         val allItems = PaletteHelper.loadPalette(context, fileName)
 
-                                        // LỌC DỮ LIỆU y hệt như SeasonPaletteDisplay
                                         val filteredItems = allItems.filter { item ->
                                             val matchPers = p.personalityType.isNullOrEmpty() || item.personality.any { it in p.personalityType!! }
                                             val matchLife = p.lifestyleType.isNullOrEmpty() || item.lifestyle.any { it in p.lifestyleType!! }
                                             matchPers && matchLife
                                         }
 
-                                        // Chuyển đổi mã Hex sang Int
                                         filteredItems.mapNotNull { item ->
                                             try {
                                                 val hexString = item.hex
@@ -281,15 +273,13 @@ fun ResultScreen(
 
                                 }
 
-
-                                // Truyền List<Int> đã ĐƯỢC LỌC vào màn hình Wardrobe
                                 WardrobeScreen(
                                     profile = p,
                                     availableColorsFromPalette = paletteColors
                                 )
                             }
 
-                            // TAB 3: THÔNG SỐ CHI TIẾT
+                            // Tab 3: Thông số chi tiết
                             2 -> {
                                 Column(
                                     modifier = Modifier
@@ -300,12 +290,10 @@ fun ResultScreen(
                                 ) {
                                     Spacer(modifier = Modifier.height(24.dp))
 
-                                    // Score Card
                                     ScoreCard(p)
 
                                     Spacer(modifier = Modifier.height(32.dp))
 
-                                    // Bảng thông số HSV
                                     Text(
                                         "Thông số kỹ thuật (HSV)",
                                         style = MaterialTheme.typography.titleSmall
@@ -329,7 +317,6 @@ fun ResultScreen(
 
                                     Spacer(modifier = Modifier.height(24.dp))
 
-                                    // Ảnh xử lý
                                     Text(
                                         "Ảnh dùng để phân tích",
                                         fontWeight = FontWeight.SemiBold,
@@ -348,14 +335,11 @@ fun ResultScreen(
 
                                     Spacer(modifier = Modifier.height(40.dp))
 
-
-
                                 }
                             }
                         }
 
                         previewColor?.let { colorInt ->
-
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -370,12 +354,11 @@ fun ResultScreen(
                             )
                         }
 
-                        // --- 3. NÚT CUỘN XUỐNG (Dùng chung cho cả Tab 1 và Tab 3) ---
+                        // 3. Nút cuộn xuống
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.BottomCenter
                         ) {
-                            // Khai báo rõ package để tránh lỗi implicit receiver
                             androidx.compose.animation.AnimatedVisibility(
                                 visible = showScrollDownIcon,
                                 enter = fadeIn() + slideInVertically { it / 2 },
@@ -403,9 +386,7 @@ fun ResultScreen(
     }
 }
 
-/**
- * Data class to hold calculation results
- */
+
 data class ColorScores(val hue: Float, val chroma: Float, val value: Float)
 
 fun scaleHue(rawHue: Float): Float {
@@ -414,68 +395,50 @@ fun scaleHue(rawHue: Float): Float {
     val hue = ((rawHue % 360f) + 360f) % 360f
 
     return when {
-        // ===== VÙNG 1: NGOẠI LỆ HỒNG/ĐỎ (0° - 4°) =====
-        // Dưới 4° là vùng undertone lạnh (Cool), giữ mức 0 điểm.
+        // Vùng 1: Ngoại lệ hồng/đỏ (0° - 4°)
         hue < 4f -> {
             0f
         }
 
-        // ===== VÙNG 2: SKIN RANGE CHUẨN (4° - 33°) =====
-        // 4° -> Cool (0 điểm)
-        // 33° -> Warm (100 điểm)
+        // Vùng 2: Chuẩn (4° - 33°)
         hue <= 33f -> {
             ((hue - 4f) / (33f - 4f)) * 100f
         }
 
-        // ===== VÙNG 3: NGOẠI LỆ ÁM VÀNG / XANH LÁ (33° - 120°) =====
-        // Trượt dốc mềm mại từ cực Ấm (100) về cực Lạnh (0)
-        // Tại 33.01° -> ~100 điểm (Nối tiếp hoàn hảo với Vùng 2)
-        // Tại 120° -> 0 điểm
+        // Vùng 3: Ngoại lệ vàng/xanh lá (33° - 120°)
         hue <= 120f -> {
             ((120f - hue) / (120f - 33f)) * 100f
         }
 
-        // ===== VÙNG 4: NGOẠI LỆ LẠNH / XANH LAM / TÍM (120° - 360°) =====
-        // Mọi vùng màu từ xanh lá mạ tới đỏ tía đều được tính là undertone Lạnh (0 điểm)
+        // Vùng 4: Ngoại lệ xanh lam/tím (0° - 4°)
         else -> {
             0f
         }
     }.coerceIn(0f, 100f)
 }
 
-/**
- * Chroma: 0.0 (Muted/Soft) -> 1.0 (Clear/Bright)
- * Scaled: 0 (Soft) -> 100 (Bright)
- */
 fun scaleChroma(chroma: Float): Float {
     val min = 0.0f
     val max = 1.0f
     return ((chroma - min) / (max - min) * 100f).coerceIn(0f, 100f)
 }
 
-/**
- * Value: 0.0 (Dark) -> 1.0 (Light)
- * Scaled: 0 (Dark) -> 100 (Light)
- */
 fun scaleValue(value: Float): Float {
     val min = 0.0f
     val max = 1.0f
     return ((value - min) / (max - min) * 100f).coerceIn(0f, 100f)
 }
 
-/**
- * Calculations based on your formula:
- * 1. Hue = Hue of skin
- * 2. Chroma = (Chroma skin + Chroma eye + Chroma lip) / 3
- * 3. Value = (0.7 * Val skin) + (0.15 * Val eye) + (0.15 * Val hair)
- */
+// Công thức tính:
+// 1. HUE = HUE của da
+// 2. CHROMA = (CHROMA da + CHROMA mắt + CHROMA môi) / 3
+// 3. VALUE = (0.7 * VAL da) + (0.15 * VAL mắt) + (0.15 * VAL tóc)
 private fun calculateColorScores(p: Profile): ColorScores {
     val hsvSkin = FloatArray(3)
     val hsvHair = FloatArray(3)
     val hsvEye = FloatArray(3)
     val hsvLip = FloatArray(3)
 
-    // Convert Int colors to HSV arrays
     Color.colorToHSV(p.skinColor ?: Color.GRAY, hsvSkin)
     Color.colorToHSV(p.hairColor ?: Color.BLACK, hsvHair)
     Color.colorToHSV(p.eyeColor ?: Color.BLACK, hsvEye)
@@ -516,7 +479,6 @@ fun getSeason(p: Profile): String {
 
     return when (primary) {
 
-        // ===== PRIMARY: HUE =====
         "HUE" -> {
             when (hueType) {
                 "Warm" -> {
@@ -530,7 +492,6 @@ fun getSeason(p: Profile): String {
             }
         }
 
-        // ===== PRIMARY: VALUE =====
         "VALUE" -> {
             when (valueType) {
                 "Light" -> {
@@ -544,7 +505,6 @@ fun getSeason(p: Profile): String {
             }
         }
 
-        // ===== PRIMARY: CHROMA =====
         "CHROMA" -> {
             when (chromaType) {
                 "Bright" -> {
@@ -571,7 +531,6 @@ fun ScoreCard(p: Profile) {
             Text("Chỉ số Cá nhân (0-100)", style = MaterialTheme.typography.titleLarge)
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            // Removed the ° symbol since it's a 0-100 score now
             ScoreRow("Tông màu (Hue):", String.format("%.0f/100", p.hueScore ?: 0f))
             ScoreRow("Độ bão hòa (Chroma):", String.format("%.0f/100", p.chromaScore ?: 0f))
             ScoreRow("Độ sáng (Value):", String.format("%.0f/100", p.valueScore ?: 0f))
@@ -604,7 +563,6 @@ fun ColorDetailRow(label: String, colorInt: Int?) {
         Spacer(modifier = Modifier.width(16.dp))
         Column {
             Text(label, style = MaterialTheme.typography.bodySmall)
-            // Displaying H, S, V for debugging/transparency
             Text(
                 "H: ${hsv[0].toInt()}° S: ${(hsv[1] * 100).toInt()}% V: ${(hsv[2] * 100).toInt()}%",
                 style = MaterialTheme.typography.labelSmall,

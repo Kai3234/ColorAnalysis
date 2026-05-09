@@ -66,10 +66,8 @@ fun CameraScreen(
         )
     }
 
-    // Khởi tạo PreviewView với ScaleType cố định
     val previewView = remember {
         PreviewView(context).apply {
-            // Quan trọng: Giúp camera tràn màn hình
             scaleType = PreviewView.ScaleType.FILL_CENTER
             implementationMode = PreviewView.ImplementationMode.COMPATIBLE
         }
@@ -86,26 +84,23 @@ fun CameraScreen(
         if (!hasPermission) launcher.launch(Manifest.permission.CAMERA)
     }
 
-    // Cập nhật Camera khi lensFacing thay đổi
     LaunchedEffect(lensFacing) {
         if (!hasPermission) return@LaunchedEffect
 
         val cameraProviderProvider = ProcessCameraProvider.getInstance(context)
 
-        // Lắng nghe khi cameraProvider sẵn sàng
         cameraProviderProvider.addListener({
             val cameraProvider = cameraProviderProvider.get()
 
-            // Cấu hình Preview với tỷ lệ khung hình tự động hoặc cố định
             val preview = Preview.Builder()
-                .setTargetAspectRatio(AspectRatio.RATIO_4_3) // Thường camera phone hoạt động ổn định nhất ở 4:3
+                .setTargetAspectRatio(AspectRatio.RATIO_4_3)
                 .build()
                 .also {
                     it.setSurfaceProvider(previewView.surfaceProvider)
                 }
 
             val capture = ImageCapture.Builder()
-                .setTargetAspectRatio(AspectRatio.RATIO_4_3) // Khớp với Preview để ảnh chụp ra giống Preview
+                .setTargetAspectRatio(AspectRatio.RATIO_4_3)
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
                 .build()
 
@@ -131,13 +126,11 @@ fun CameraScreen(
 
     if (hasPermission) {
         Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
-            // Preview tràn toàn bộ Box
             AndroidView(
                 factory = { previewView },
                 modifier = Modifier.fillMaxSize()
             )
 
-            // UI Buttons (Giữ nguyên logic của bạn)
             IconButton(
                 onClick = {
                     lensFacing = if (lensFacing == CameraSelector.LENS_FACING_FRONT) {

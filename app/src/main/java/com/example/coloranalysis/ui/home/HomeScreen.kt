@@ -144,7 +144,7 @@ fun HomeScreen(
                                 renameValue = profile.profileName
                             },
                             onMoveToTopClick = {
-                                // Mẹo thay đổi thứ tự: Cập nhật thời gian thành hiện tại để nó nổi lên đầu
+                                // Thay đổi thứ tự: Cập nhật thời gian thành hiện tại để nó nổi lên đầu
                                 coroutineScope.launch(Dispatchers.IO) {
                                     db.updateProfile(profile.copy(dateCreated = System.currentTimeMillis()))
                                 }
@@ -159,7 +159,7 @@ fun HomeScreen(
         }
     }
 
-    // --- DIALOG THÊM MỚI ---
+    // Dialog thêm mới
     if (showAddDialog) {
         AlertDialog(
             onDismissRequest = { showAddDialog = false },
@@ -192,7 +192,7 @@ fun HomeScreen(
         )
     }
 
-    // --- DIALOG ĐỔI TÊN ---
+    // Dialog đổi tên
     if (profileToRename != null) {
         AlertDialog(
             onDismissRequest = { profileToRename = null },
@@ -219,7 +219,7 @@ fun HomeScreen(
         )
     }
 
-    // --- DIALOG XÁC NHẬN XÓA ---
+    // Dialog xác nhận xóa
     if (profileToDelete != null) {
         AlertDialog(
             onDismissRequest = { profileToDelete = null },
@@ -241,9 +241,7 @@ fun HomeScreen(
     }
 }
 
-// ==========================================
-// THẺ PROFILE
-// ==========================================
+// Card hồ sơ
 @Composable
 fun ProfileCard(
     profile: Profile,
@@ -255,7 +253,6 @@ fun ProfileCard(
     val dateFormat = SimpleDateFormat("dd/MM/yyyy - HH:mm", Locale.getDefault())
     val dateString = dateFormat.format(Date(profile.dateCreated))
 
-    // 1. Tính toán màu sắc
     val backgroundColor = SeasonData.palettes[profile.seasonType ?: ""]?.uiColor
         ?: MaterialTheme.colorScheme.surfaceContainerHigh
     val contentColor = if (backgroundColor.luminance() > 0.5f) Color.Black else Color.White
@@ -300,7 +297,7 @@ fun ProfileCard(
                 )
             }
 
-            // MENU 3 CHẤM
+            // Menu
             Box {
                 IconButton(onClick = { expanded = true }) {
                     Icon(Icons.Default.MoreVert, "Tùy chọn", tint = contentColor)
